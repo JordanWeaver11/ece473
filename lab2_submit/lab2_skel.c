@@ -21,13 +21,16 @@ uint8_t State[MAX_CHECKS];		//array that maintains bounce status
 uint8_t Index = 0;				//pointer into State
 
 //holds data to be sent to the segments. logic zero turns segment on
-uint8_t segment_data[4] = {0x03, 0xff, 0xff, 0xff};
+uint8_t segment_data[4] = {0xc0, 0xff, 0xff, 0xff};
 
 //decimal to 7-segment LED display encodings, logic "0" turns on segment
-uint8_t dec_to_7seg[10] = {0x03, 0x9f, 0x25, 0x0d, 0x99, 0x49, 0x41, 0x1f, 0x01, 0x19};
+//uint8_t dec_to_7seg[10] = {0x03, 0x9f, 0x25, 0x0d, 0x99, 0x49, 0x41, 0x1f, 0x01, 0x19};
+uint8_t dec_to_7seg[10] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80, 0x98};
+
 
 //store portb values for each digit
-uint8_t portb_digit[4] = {0, (1<<PB4), (1<<PB5), (1<<PB6)};
+uint8_t portb_digit[5] = {0, (1<<PB4), (1<<PB5), (1<<PB4) | (1<<PB5), 1<<PB6};
+//uint8_t portb_digit[4] = {0, 1, 3, 4};
 
 uint8_t disp_num = 0;
 
@@ -97,7 +100,7 @@ uint8_t chk_buttons(uint8_t button) {
 //                                   segment_sum                                    
 //takes a 16-bit binary input value and places the appropriate equivalent 4 digit 
 //BCD segment code in the array segment_data for display.                       
-//array is loaded at exit as:  |colon|digit3|digit2|digit1|digit0|
+//array is loaded at exit as:  digit3|digit2||colon|digit1|digit0|
 void segsum(uint16_t sum) {
   //determine how many digits there are 
   uint8_t digits = 4;
@@ -123,6 +126,14 @@ void segsum(uint16_t sum) {
 }//segment_sum
 //***********************************************************************************
 
+uint8_t getCount() {
+	static counter = 0;
+	counter++;
+	if(counter > 4) {
+		counter = 0;
+	}
+	return counter;
+}
 
 //***********************************************************************************
 uint8_t main()
@@ -130,10 +141,12 @@ uint8_t main()
 //set port bits 4-7 B as outputs
 DDRB = (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
 PORTB = 0;
+
+int count = 0;
 while(1){
 	int i = 0;
   //insert loop delay for debounce
-  for(i=0;i<5;i++){_delay_ms(2);} //0.01 second wait
+  for(i=0;i<2;i++){_delay_ms(1);} //0.01 second wait
   //make PORTA an input port with pullups 
   DDRA = 0;
   PORTA = 0xff;
@@ -207,14 +220,39 @@ while(1){
   }
   //make PORTA an output
   DDRA = 0xff;
+  
+  //-------
+  PORTA = dec_to_7seg[segment_data[i]];
+  PORTB = portb_digit[count];
+  
+  count++;
+  if(count > 4) {
+	  count = 0;
+  }
+  if(count == 2) {
+	  count++;
+  }
+  //------
+/*
   //bound a counter (0-4) to keep track of digit to display 
   for(i = 0; i < 4; i++) {
 	  //send 7 segment code to LED segments
-		PORTA = dec_to_7seg[segment_data[i]];
+		//PORTA = dec_to_7seg[segment_data[i]];
 	  //send PORTB the digit to display
-	  PORTB = portb_digit[i];
+	  
+	  PORTA = dec_to_7seg[1];
+	  PORTB = portb_digit[count];
+  
+	  count++;
+	  if(count > 4) {
+		  count = 0;
+	  }
+	  if(count == 2) {
+		  count++;
+	  }
 	  //update digit to display
   }
+  */
 
 
   }//while
