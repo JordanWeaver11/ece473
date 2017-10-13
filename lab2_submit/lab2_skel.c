@@ -20,6 +20,25 @@ uint8_t segment_data[5] = {0xff, 0xff, 0xff, 0xff, 0xff};
 //decimal to 7-segment LED display encodings, logic "0" turns on segment
 uint8_t dec_to_7seg[10] = {0x03, 0x9f, 0x25, 0x0d, 0x99, 0x49, 0x41, 0x1f, 0x01, 0x19};
 
+//*****************************************************************************
+//							bin_to_bcd
+//Converts binary number to bdc by modding by 10 and shifting by 4 bits per digit.
+uint16_t bin_to_bcd(uint8_t i) {
+    uint8_t binaryShift = 0;
+    uint8_t digit;
+    uint16_t bcd = 0;
+    while (i > 0) {
+        //mod by 10 each time to move from 1s to 10s, so on
+        digit = i % 10;
+        //extract each decimal digit encoded with 4 bits
+        bcd += (digit << binaryShift);
+        //shift another 4 bits to get the next digit
+        binaryShift += 4;
+        i /= 10;
+    }
+    return bcd;
+}
+//*******************************************************************************
 
 //******************************************************************************
 //                            chk_buttons                                      
@@ -39,13 +58,19 @@ uint8_t chk_buttons(uint8_t button) {
 //                                   segment_sum                                    
 //takes a 16-bit binary input value and places the appropriate equivalent 4 digit 
 //BCD segment code in the array segment_data for display.                       
-//array is loaded at exit as:  |digit3|digit2|colon|digit1|digit0|
+//array is loaded at exit as:  |colon|digit3|digit2|digit1|digit0|
 void segsum(uint16_t sum) {
   //determine how many digits there are 
-  uint8_t digits = 0;
-  while((sum>>digits * 4)) {
-	  digits++;
+  uint8_t digits = 3;
+  //start far left, decrement digits every time i find a leading zero
+  while( (sum>>(digits * 4)) == 0 ) {
+	digits--;
   }
+  
+  //numebr of digits is really 1 more
+  digits++;
+  
+  
   //break up decimal sum into 4 digit-segments
   
   //blank out leading zero digits 
