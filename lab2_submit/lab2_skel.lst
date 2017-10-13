@@ -1,0 +1,157 @@
+
+lab2_skel.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         00000010  00800100  000000dc  00000150  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .text         000000dc  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .stab         000005dc  00000000  00000000  00000160  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  3 .stabstr      00000c56  00000000  00000000  0000073c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .comment      00000011  00000000  00000000  00001392  2**0
+                  CONTENTS, READONLY
+  5 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000013a4  2**2
+                  CONTENTS, READONLY
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 46 00 	jmp	0x8c	; 0x8c <__ctors_end>
+   4:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+   8:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+   c:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  10:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  14:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  18:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  1c:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  20:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  24:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  28:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  2c:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  30:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  34:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  38:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  3c:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  40:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  44:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  48:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  4c:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  50:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  54:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  58:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  5c:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  60:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  64:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  68:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  6c:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  70:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  74:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  78:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  7c:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  80:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  84:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+  88:	0c 94 5d 00 	jmp	0xba	; 0xba <__bad_interrupt>
+
+0000008c <__ctors_end>:
+  8c:	11 24       	eor	r1, r1
+  8e:	1f be       	out	0x3f, r1	; 63
+  90:	cf ef       	ldi	r28, 0xFF	; 255
+  92:	d0 e1       	ldi	r29, 0x10	; 16
+  94:	de bf       	out	0x3e, r29	; 62
+  96:	cd bf       	out	0x3d, r28	; 61
+
+00000098 <__do_copy_data>:
+  98:	11 e0       	ldi	r17, 0x01	; 1
+  9a:	a0 e0       	ldi	r26, 0x00	; 0
+  9c:	b1 e0       	ldi	r27, 0x01	; 1
+  9e:	ec ed       	ldi	r30, 0xDC	; 220
+  a0:	f0 e0       	ldi	r31, 0x00	; 0
+  a2:	00 e0       	ldi	r16, 0x00	; 0
+  a4:	0b bf       	out	0x3b, r16	; 59
+  a6:	02 c0       	rjmp	.+4      	; 0xac <__do_copy_data+0x14>
+  a8:	07 90       	elpm	r0, Z+
+  aa:	0d 92       	st	X+, r0
+  ac:	a0 31       	cpi	r26, 0x10	; 16
+  ae:	b1 07       	cpc	r27, r17
+  b0:	d9 f7       	brne	.-10     	; 0xa8 <__do_copy_data+0x10>
+  b2:	0e 94 61 00 	call	0xc2	; 0xc2 <main>
+  b6:	0c 94 6c 00 	jmp	0xd8	; 0xd8 <_exit>
+
+000000ba <__bad_interrupt>:
+  ba:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+000000be <chk_buttons>:
+//Expects active low pushbuttons on PINA port.  Debounce time is determined by 
+//external loop delay times 12. 
+//
+uint8_t chk_buttons(uint8_t button) {
+	
+}
+  be:	08 95       	ret
+
+000000c0 <segsum>:
+//***********************************************************************************
+//                                   segment_sum                                    
+//takes a 16-bit binary input value and places the appropriate equivalent 4 digit 
+//BCD segment code in the array segment_data for display.                       
+//array is loaded at exit as:  |digit3|digit2|colon|digit1|digit0|
+void segsum(uint16_t sum) {
+  c0:	08 95       	ret
+
+000000c2 <main>:
+
+//***********************************************************************************
+uint8_t main()
+{
+//set port bits 4-7 B as outputs
+DDRB = (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
+  c2:	80 ef       	ldi	r24, 0xF0	; 240
+  c4:	87 bb       	out	0x17, r24	; 23
+PORTB = 0;
+  c6:	18 ba       	out	0x18, r1	; 24
+*/
+while(1){
+  //insert loop delay for debounce
+  //make PORTA an input port with pullups 
+  DDRA = 0;
+  PORTA = 0xff;
+  c8:	2f ef       	ldi	r18, 0xFF	; 255
+  //enable tristate buffer for pushbutton switches
+  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
+  ca:	90 e7       	ldi	r25, 0x70	; 112
+  //now check each button and increment the count as needed
+  //disable tristate buffer for pushbutton switches
+  PORTB = (1<<PB5) | (1<<PB6);  //enables unused Y6 output
+  cc:	80 e6       	ldi	r24, 0x60	; 96
+PORTA = 
+*/
+while(1){
+  //insert loop delay for debounce
+  //make PORTA an input port with pullups 
+  DDRA = 0;
+  ce:	1a ba       	out	0x1a, r1	; 26
+  PORTA = 0xff;
+  d0:	2b bb       	out	0x1b, r18	; 27
+  //enable tristate buffer for pushbutton switches
+  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
+  d2:	98 bb       	out	0x18, r25	; 24
+  //now check each button and increment the count as needed
+  //disable tristate buffer for pushbutton switches
+  PORTB = (1<<PB5) | (1<<PB6);  //enables unused Y6 output
+  d4:	88 bb       	out	0x18, r24	; 24
+  //bound a counter (0-4) to keep track of digit to display 
+  //make PORTA an output
+  //send 7 segment code to LED segments
+  //send PORTB the digit to display
+  //update digit to display
+  }//while
+  d6:	fb cf       	rjmp	.-10     	; 0xce <main+0xc>
+
+000000d8 <_exit>:
+  d8:	f8 94       	cli
+
+000000da <__stop_program>:
+  da:	ff cf       	rjmp	.-2      	; 0xda <__stop_program>
