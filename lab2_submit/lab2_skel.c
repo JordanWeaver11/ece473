@@ -23,7 +23,6 @@ uint8_t dec_to_7seg[10] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80,
 
 //store portb values for each digit
 uint8_t portb_digit[5] = {0, (1<<PB4), (1<<PB5), (1<<PB4) | (1<<PB5), (1<<PB6)};
-//uint8_t portb_digit[4] = {0, 1, 3, 4};
 
 uint16_t disp_num = 0;
 
