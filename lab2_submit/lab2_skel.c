@@ -11,20 +11,13 @@
 #define F_CPU 16000000 // cpu speed in hertz 
 #define TRUE 1
 #define FALSE 0
-#define MAX_CHECKS 7
 #include <avr/io.h>
 #include <util/delay.h>
-
-//debouncing values
-uint8_t Debounced_State = 0;	//debounced state of the switches
-uint8_t State[MAX_CHECKS];		//array that maintains bounce status
-uint8_t Index = 0;				//pointer into State
 
 //holds data to be sent to the segments. logic zero turns segment on
 uint8_t segment_data[5] = {0xc0, 0xff, 0x07, 0xff, 0xff};
 
 //decimal to 7-segment LED display encodings, logic "0" turns on segment
-//uint8_t dec_to_7seg[10] = {0x03, 0x9f, 0x25, 0x0d, 0x99, 0x49, 0x41, 0x1f, 0x01, 0x19};
 uint8_t dec_to_7seg[10] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80, 0x98};
 
 
@@ -32,7 +25,7 @@ uint8_t dec_to_7seg[10] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80,
 uint8_t portb_digit[5] = {0, (1<<PB4), (1<<PB5), (1<<PB4) | (1<<PB5), (1<<PB6)};
 //uint8_t portb_digit[4] = {0, 1, 3, 4};
 
-uint8_t disp_num = 0;
+uint16_t disp_num = 0;
 
 //*****************************************************************************
 //							bin_to_bcd
@@ -53,8 +46,6 @@ uint16_t bin_to_bcd(uint16_t i) {
     }
     return bcd;
 }
-
-
 //*******************************************************************************
 
 //******************************************************************************
@@ -84,14 +75,13 @@ uint8_t debounce_switch() {
 //Expects active low pushbuttons on PINA port.  Debounce time is determined by 
 //external loop delay times 12. 
 //
-void chk_buttons(uint8_t button) {
-	uint8_t i, j;
-	State[button] = ~(PINA) & (1<<button);
-	j = 0xff;
-	for(i = 0; i < MAX_CHECKS - 1; i++) {
-		j = j & State[i];
-		Debounced_State = Debounced_State ^ j;
+uint8_t chk_buttons(uint8_t button) {
+	static uint16_t state[8]; //holds present state
+	state[button] = (state[button] << 1) | (!bit_is_clear(PINA, button)) | 0xE000; //update state
+	if(state[button] == 0xf000) {
+		return TRUE;  //return true after 12 clears
 	}
+	return FALSE;
 }
 //******************************************************************************
 
@@ -117,7 +107,6 @@ void segsum(uint16_t bcd) {
 		bcd >>= 4;
 	}
 } 
-
 //***********************************************************************************
 
 //***********************************************************************************
@@ -128,10 +117,10 @@ DDRB = (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
 PORTB = 0;
 
 int count = 0;
+int i = 0;
 while(1){
-	int i = 0;
   //insert loop delay for debounce
-  for(i=0;i<3;i++){_delay_ms(1);} //0.01 second wait
+  for(i=0;i<2;i++){_delay_ms(1);}
   //make PORTA an input port with pullups 
   DDRA = 0;
   PORTA = 0xff;
@@ -140,68 +129,10 @@ while(1){
   
   //now check each button and increment the count as needed
   for(i = 0; i < 8; i++) {
-	  chk_buttons(i);
+	  if(chk_buttons(i)) {
+		  disp_num += (1 << i);
+	  }
   }
-  if(Debounced_State & (1<<PA0)) {
-	  disp_num += 1;
-  }
-  if(Debounced_State & (1<<PA1)) {
-	  disp_num += 2;
-  }
-  if(Debounced_State & (1<<PA2)) {
-	  disp_num += 4;
-  }
-  if(Debounced_State & (1<<PA3)) {
-	  disp_num += 8;
-  }
-  if(Debounced_State & (1<<PA4)) {
-	  disp_num += 16;
-  }
-  if(Debounced_State & (1<<PA5)) {
-	  disp_num += 32;
-  }
-  if(Debounced_State & (1<<PA6)) {
-	  disp_num += 64;
-  }
-  if(Debounced_State & (1<<PA7)) {
-	  disp_num += 128;
-  }
-  
-  /*
-  if(PINA & PA0) {
-	  _delay_ms(100);
-	  if(PINA & PA0) disp_num += 1;
-  }
-  if(PINA & PA1) {
-	  _delay_ms(100);
-	  if(PINA & PA1) disp_num += 2;
-  }
-  if(PINA & PA2) {
-	  _delay_ms(100);
-	  if(PINA & PA2) disp_num += 4;
-  }
-  if(PINA & PA3) {
-	  _delay_ms(100);
-	  if(PINA & PA3) disp_num += 8;
-  }
-  if(PINA & PA4) {
-	  _delay_ms(100);
-	  if(PINA & PA4) disp_num += 16;
-  }
-  if(PINA & PA5) {
-	  _delay_ms(100);
-	  if(PINA & PA5) disp_num += 32;
-  }
-  if(PINA & PA6) {
-	  _delay_ms(100);
-	  if(PINA & PA6) disp_num += 64;
-  }
-  if(PINA & PA7) {
-	  _delay_ms(100);
-	  if(PINA & PA7) disp_num += 128;
-  }
-  */
-  
   
   //disable tristate buffer for pushbutton switches
   PORTB = (1<<PB5) | (1<<PB6);  //enables unused Y6 output
@@ -213,17 +144,19 @@ while(1){
   //make PORTA an output
   DDRA = 0xff;
   
+  //avoid the colon
   if(count == 2) {
 	count++;
   }
-  
-  
-  
+  //break up the number to display into 4 separate bcd digits
   segsum(bin_to_bcd(disp_num));
+  //write the digits to the 7-seg display
   PORTA = dec_to_7seg[segment_data[count]];
+  //select the correct digit
   PORTB = portb_digit[count];
-  
+  //update digit to display
   count++;
+  //loop back to first digit when needed
   if(count > 4) {
 	  count = 0;
   }
