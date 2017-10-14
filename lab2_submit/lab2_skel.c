@@ -55,28 +55,6 @@ uint16_t bin_to_bcd(uint16_t i) {
 }
 
 
-/*
-uint16_t bin_to_bcd(uint16_t i) {
-	uint16_t bcd = 0;
-	uint16_t shift = 0;
-	while(i > 0) {
-		bcd |= (i % 10) << (shift++ << 2);
-		i /= 10;
-	}
-	return bcd;
-}
-*/
-
-
-/*
-uint16_t bin_to_bcd(uint8_t i) {
-	uint16_t bcd = 0;
-	uint16_t shift = 0;
-	
-}
-*/
-
-
 //*******************************************************************************
 
 //******************************************************************************
@@ -106,22 +84,13 @@ uint8_t debounce_switch() {
 //Expects active low pushbuttons on PINA port.  Debounce time is determined by 
 //external loop delay times 12. 
 //
-/*
-uint8_t chk_buttons(uint8_t button) {
-	
-}
-*/
 void chk_buttons(uint8_t button) {
 	uint8_t i, j;
-	State[Index] = ~(PINA) & (1<<button);
-	++Index;
+	State[button] = ~(PINA) & (1<<button);
 	j = 0xff;
 	for(i = 0; i < MAX_CHECKS - 1; i++) {
 		j = j & State[i];
 		Debounced_State = Debounced_State ^ j;
-		if(Index >= MAX_CHECKS) {
-			Index = 0;
-		}
 	}
 }
 //******************************************************************************
@@ -131,47 +100,9 @@ void chk_buttons(uint8_t button) {
 //takes a 16-bit binary input value and places the appropriate equivalent 4 digit 
 //BCD segment code in the array segment_data for display.                       
 //array is loaded at exit as:  digit3|digit2||colon|digit1|digit0|
-/*
-void segsum(uint16_t sum) {
-  //determine how many digits there are 
-  uint8_t digits = 4;
-  //start far left, decrement digits every time I find a leading zero
-  while( (sum>>((digits-1) * 4)) == 0 ) {
-	digits--;  //CAUTION: FIXME bug if sum == 0
-  }
-  
-  //break up decimal sum into 4 digit-segments
-  uint8_t i = 0;
-  while (i < (digits)){
-	  if(i < 2) {
-		  //extract segments by shifting sum left, then right
-		  segment_data[i] = (sum<<(digits-1-i))>>12;
-	  }
-	  else {
-		//extract segments by shifting sum left, then right
-		segment_data[i] = (sum<<(digits-1-i))>>12;
-	  }
-	  i++;
-  }
-  
-  //blank out leading zero digits 
-  i = 3;
-  while(i > (digits-1)) {
-	  //0xff creates a blank
-	  segment_data[i] = 0xff;
-	  i--;
-  }
-  for(i = 0; i < 5; i++) {
-	  segment_data[i] = bin_to_bcd(7) & 0xff;
-  }
-}//segment_sum
-*/
-
-
 void segsum(uint16_t bcd) {
     uint8_t digit;
     uint8_t i = 0;
-    //bcd = 0b0001001000110100;
 	for(i = 0; i < 5; i++) {
 		//ignore colon on display
 		if(i == 2) {
@@ -185,14 +116,6 @@ void segsum(uint16_t bcd) {
 		//shift the bcd value to move to the next digit
 		bcd >>= 4;
 	}
-	/*
-	bcd = 0b0001001000110100;
-	segment_data[0] = bcd & 0xf;
-	segment_data[1] = (bcd>>4) & 0xf;
-	segment_data[2] = 7;
-	segment_data[3] = (bcd>>8) & 0xf;
-	segment_data[4] = (bcd>>12) & 0xf;
-	*/
 } 
 
 //***********************************************************************************
@@ -280,22 +203,13 @@ while(1){
   */
   
   
-  
-//  disp_num += chk_buttons(1);
-  
-//  disp_num = 3;                                        //DEBUG
   //disable tristate buffer for pushbutton switches
   PORTB = (1<<PB5) | (1<<PB6);  //enables unused Y6 output
   //bound the count to 0 - 1023
   if(disp_num > 1023) {
 	  disp_num = 1;
   }
-  /*
-  //break up the disp_value to 4, BCD digits in the array: call (segsum)
-  if( disp_num != 0 ) {
-	segsum(bin_to_bcd(3));
-  }
-  */
+
   //make PORTA an output
   DDRA = 0xff;
   
@@ -309,42 +223,10 @@ while(1){
   PORTA = dec_to_7seg[segment_data[count]];
   PORTB = portb_digit[count];
   
-  
-  /*
-  PORTA = dec_to_7seg[7];
-  PORTB = portb_digit[count];
-  */
-  
-  /*
-  PORTA = bin_to_bcd(3) & 0xff;
-  PORTB = portb_digit[count];
-  */
   count++;
   if(count > 4) {
 	  count = 0;
   }
-
-/*
-  //bound a counter (0-4) to keep track of digit to display 
-  for(i = 0; i < 4; i++) {
-	  //send 7 segment code to LED segments
-		//PORTA = dec_to_7seg[segment_data[i]];
-	  //send PORTB the digit to display
-	  
-	  PORTA = dec_to_7seg[1];
-	  PORTB = portb_digit[count];
-  
-	  count++;
-	  if(count > 4) {
-		  count = 0;
-	  }
-	  if(count == 2) {
-		  count++;
-	  }
-	  //update digit to display
-  }
-  */
-
 
   }//while
 }//main
