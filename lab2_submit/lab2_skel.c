@@ -11,7 +11,7 @@
 #define F_CPU 16000000 // cpu speed in hertz 
 #define TRUE 1
 #define FALSE 0
-#define MAX_CHECKS 12
+#define MAX_CHECKS 7
 #include <avr/io.h>
 #include <util/delay.h>
 
@@ -65,7 +65,7 @@ uint16_t bin_to_bcd(uint16_t i) {
 	}
 	return bcd;
 }
-* /
+*/
 
 
 /*
@@ -83,6 +83,7 @@ uint16_t bin_to_bcd(uint8_t i) {
 //								debounce
 //Debounces pushbuttons so that they are only detected once per button push.
 //Taken from lecture slides
+/*
 uint8_t debounce_switch() {
 	static uint16_t state = 0; //holds present state
 	state = (state << 1) | (! bit_is_clear(PINA, 5)) | 0xE000;
@@ -91,6 +92,7 @@ uint8_t debounce_switch() {
 	}
 	return FALSE;
 }
+*/
 //*******************************************************************************
 
 
@@ -111,7 +113,7 @@ uint8_t chk_buttons(uint8_t button) {
 */
 void chk_buttons(uint8_t button) {
 	uint8_t i, j;
-	State[Index] = PINA & button;
+	State[Index] = ~(PINA) & (1<<button);
 	++Index;
 	j = 0xff;
 	for(i = 0; i < MAX_CHECKS - 1; i++) {
@@ -206,72 +208,82 @@ int count = 0;
 while(1){
 	int i = 0;
   //insert loop delay for debounce
-  for(i=0;i<2;i++){_delay_ms(1);} //0.01 second wait
+  for(i=0;i<3;i++){_delay_ms(1);} //0.01 second wait
   //make PORTA an input port with pullups 
   DDRA = 0;
   PORTA = 0xff;
   //enable tristate buffer for pushbutton switches
   PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
+  
   //now check each button and increment the count as needed
-  /*for(i = 0; i < 8; i++) {
+  for(i = 0; i < 8; i++) {
 	  chk_buttons(i);
   }
-  if(Debounced_State >> PA0) {
+  if(Debounced_State & (1<<PA0)) {
 	  disp_num += 1;
   }
-  if(Debounced_State >> PA1) {
+  if(Debounced_State & (1<<PA1)) {
 	  disp_num += 2;
   }
-  if(Debounced_State >> PA2) {
+  if(Debounced_State & (1<<PA2)) {
 	  disp_num += 4;
   }
-  if(Debounced_State >> PA3) {
+  if(Debounced_State & (1<<PA3)) {
 	  disp_num += 8;
   }
-  if(Debounced_State >> PA4) {
+  if(Debounced_State & (1<<PA4)) {
 	  disp_num += 16;
   }
-  if(Debounced_State >> PA5) {
+  if(Debounced_State & (1<<PA5)) {
 	  disp_num += 32;
   }
-  if(Debounced_State >> PA6) {
+  if(Debounced_State & (1<<PA6)) {
 	  disp_num += 64;
   }
-  if(Debounced_State >> PA7) {
+  if(Debounced_State & (1<<PA7)) {
 	  disp_num += 128;
   }
-  */
+  
   /*
   if(PINA & PA0) {
-	  disp_num += 1;
+	  _delay_ms(100);
+	  if(PINA & PA0) disp_num += 1;
   }
   if(PINA & PA1) {
-	  disp_num += 2;
+	  _delay_ms(100);
+	  if(PINA & PA1) disp_num += 2;
   }
   if(PINA & PA2) {
-	  disp_num += 4;
+	  _delay_ms(100);
+	  if(PINA & PA2) disp_num += 4;
   }
   if(PINA & PA3) {
-	  disp_num += 8;
+	  _delay_ms(100);
+	  if(PINA & PA3) disp_num += 8;
   }
   if(PINA & PA4) {
-	  disp_num += 16;
+	  _delay_ms(100);
+	  if(PINA & PA4) disp_num += 16;
   }
   if(PINA & PA5) {
-	  disp_num += 32;
+	  _delay_ms(100);
+	  if(PINA & PA5) disp_num += 32;
   }
   if(PINA & PA6) {
-	  disp_num += 64;
+	  _delay_ms(100);
+	  if(PINA & PA6) disp_num += 64;
   }
   if(PINA & PA7) {
-	  disp_num += 128;
+	  _delay_ms(100);
+	  if(PINA & PA7) disp_num += 128;
   }
   */
+  
   
   
 //  disp_num += chk_buttons(1);
   
-  disp_num = 3;                                        //DEBUG
+//  disp_num = 3;                                        //DEBUG
   //disable tristate buffer for pushbutton switches
   PORTB = (1<<PB5) | (1<<PB6);  //enables unused Y6 output
   //bound the count to 0 - 1023
@@ -293,8 +305,8 @@ while(1){
   
   
   
-  segsum(bin_to_bcd(4321));
-  PORTA = dec_to_7seg[segment_data[4]];
+  segsum(bin_to_bcd(disp_num));
+  PORTA = dec_to_7seg[segment_data[count]];
   PORTB = portb_digit[count];
   
   
