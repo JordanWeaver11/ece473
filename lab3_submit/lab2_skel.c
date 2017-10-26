@@ -55,7 +55,7 @@ uint16_t bin_to_bcd(uint16_t i) {
 uint8_t debounce_switch() {
 	static uint16_t state = 0; //holds present state
 	state = (state << 1) | (! bit_is_clear(PINA, 5)) | 0xE000;
-	if(state = 0xf000) {
+	if(state == 0xf000) {
 		return TRUE;
 	}
 	return FALSE;

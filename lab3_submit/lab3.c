@@ -44,6 +44,9 @@ uint8_t enc_prev[2];
  */
 uint8_t inc_dec_state[2];
 
+uint8_t enc1_state = 0;
+uint8_t enc2_state = 0;
+
 //*****************************************************************************
 //							bin_to_bcd
 //Converts binary number to bdc by modding by 10 and shifting by 4 bits per digit.
@@ -179,6 +182,39 @@ ISR(TIMER0_OVF_vect){
 }
 //*******************************************************************************
 
+uint8_t change_state2(uint8_t new_input) {
+	if(new_input != 0x00) {
+		enc2_state = (state<<2) | new_input;
+	}
+	switch(enc2_state) {
+		//preserve intermediate state
+		case: (0x02<<0)
+			break;
+		//preserve intermediate state
+		case: (0x02<<0) | (0x03<<2)
+			break;
+		//increment
+		case: ((0x02<<0) | (0x03<<2) | (0x01<<4))
+			disp_num++;
+			enc2_state = 0x00;
+			break;
+		//preserve intermediate state
+		case: (0x01<<0)
+			break;
+		//preserve intermediate state
+		case: (0x01<<0) | (0x03<<2)
+			break;
+		//decrement
+		case: ((0x01<<0) | (0x03<<2) | (0x02<<4))
+			disp_num--;
+			enc2_state = 0x00;
+			break;
+		//reset state if it is not going the right way
+		default:
+			enc2_state = 0x00;
+	}
+}
+
 uint8_t main()
 {
 //set port B bits 4-7 as outputs
@@ -234,7 +270,9 @@ while(1){
   
   if(write_ready) {
 	  PORTC |= 0x01;
-	  disp_num = spi_write_read(disp_num);
+	  uint8_t change = spi_write_read(disp_num);
+	  change_state2(change & 0x03);
+	  //disp_num = spi_write_read(disp_num);
 	  /*
 	  int8_t spi_in = spi_write_read(disp_num);
 	  switch(spi_in) {
