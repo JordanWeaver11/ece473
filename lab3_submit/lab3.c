@@ -234,16 +234,18 @@ while(1){
   
   if(write_ready) {
 	  PORTC |= 0x01;
+	  disp_num = spi_write_read(disp_num);
+	  /*
 	  int8_t spi_in = spi_write_read(disp_num);
 	  switch(spi_in) {
 		  case 0:
-		  
+			enc_prev[RIGHT_ENC] = 0;
 		  case 1:
 			if(enc_prev[RIGHT_ENC] == 0){
 				//Just started decrementing
 				inc_dec_state[RIGHT_ENC] = DECREMENT;
 			}
-			else {
+			else if(enc_prev[RIGHT_ENC] == 3) {
 				//Just finished incrementing
 				disp_num++;
 				inc_dec_state[RIGHT_ENC] = IDLE;
@@ -255,7 +257,7 @@ while(1){
 				//just started incrementing
 				inc_dec_state[RIGHT_ENC] = INCREMENT;
 			}
-			else {
+			else if(enc_prev[RIGHT_ENC] == 3){
 				//just finished decrementing
 				inc_dec_state[RIGHT_ENC] = IDLE;
 				disp_num--;
@@ -270,7 +272,7 @@ while(1){
 				//just started decrementing
 				inc_dec_state[LEFT_ENC] = DECREMENT;
 			}
-			else {
+			else if(enc_prev[LEFT_ENC] == 12) {
 				//just finished incrementing
 				inc_dec_state[LEFT_ENC] = IDLE;
 				disp_num++;
@@ -282,7 +284,7 @@ while(1){
 				//just started incrementing
 				inc_dec_state[LEFT_ENC] = INCREMENT;
 			}
-			else {
+			else if(enc_prev[LEFT_ENC] == 12){
 				//just finished decrementing
 				inc_dec_state[LEFT_ENC] = DECREMENT;
 				disp_num--;
@@ -293,6 +295,8 @@ while(1){
 			enc_prev[RIGHT_ENC] = 12;
 			
 	  }
+	  */
+	  
 	  PORTC &= ~(1<<PC0);
 	  PORTC |=  (1<<PC1);                   //send rising edge to regclk on HC595 
 	  PORTC &= ~(1<<PC1);                   //send falling edge to regclk on HC595
