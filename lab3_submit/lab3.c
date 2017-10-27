@@ -11,8 +11,6 @@
 #define F_CPU 16000000 // cpu speed in hertz 
 #define TRUE 1
 #define FALSE 0
-#define LEFT_ENC 0
-#define RIGHT_ENC 1
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -29,12 +27,17 @@ uint8_t dec_to_7seg[10] = {0xc0, 0xf9, 0xa4, 0xb0, 0x99, 0x92, 0x82, 0xf8, 0x80,
 uint8_t portb_digit_or[5] = {0, (1<<PB4), (1<<PB5), (1<<PB4) | (1<<PB5), (1<<PB6)};
 uint8_t portb_digit_and[5] = {~(1<<PB4) & ~(1<<PB5) & ~(1<<PB6), ~(1<<PB5) & ~(1<<PB6), ~(1<<PB4) & ~(1<<PB6), ~(1<<PB6), ~(1<<PB4) & ~(1<<PB5)};
 
-uint16_t disp_num = 0;
+int16_t disp_num = 0;
 uint8_t write_ready = 0;
 
 uint8_t history[2] = {0, 0};
 int8_t inc_dec_flag = 0;
-uint8_t the_mode = 0;
+/* button 0 = no mode
+ * button 1 = increment by 1
+ * button 2 = increment by 2
+ * button 3 = increment by 3
+*/
+uint8_t the_mode = (1<<1);
 
 //*****************************************************************************
 //							bin_to_bcd
@@ -58,24 +61,6 @@ uint16_t bin_to_bcd(uint16_t i) {
 //*******************************************************************************
 
 //******************************************************************************
-//								debounce
-//Debounces pushbuttons so that they are only detected once per button push.
-//Taken from lecture slides
-/*
-uint8_t debounce_switch() {
-	static uint16_t state = 0; //holds present state
-	state = (state << 1) | (! bit_is_clear(PINA, 5)) | 0xE000;
-	if(state = 0xf000) {
-		return TRUE;
-	}
-	return FALSE;
-}
-*/
-//*******************************************************************************
-
-
-
-//******************************************************************************
 //                            chk_buttons                                      
 //Checks the state of the button number passed to it. It shifts in ones till   
 //the button is pushed. Function returns a 1 only once per debounced button    
@@ -86,9 +71,9 @@ uint8_t debounce_switch() {
 //
 uint8_t chk_buttons(uint8_t button) {
 	static uint16_t state[8]; //holds present state
-	state[button] = (state[button] << 1) | (!bit_is_clear(PINA, button)) | 0xE000; //update state
-	if(state[button] == 0xF000) {
-		return TRUE;  //return true after 12 clears
+	state[button] = (state[button] << 1) | (!bit_is_clear(PINA, button)) | 0xFE00; //update state
+	if(state[button] == 0xFF00) {
+		return TRUE;  //return true after 8 clears
 	}
 	return FALSE;
 }
@@ -145,12 +130,15 @@ void tcnt0_init(void){
 
 //**********************************************************************
 //							spi_read
-//Reads the SPI port.
+//Writes to the SPI port and reads from spi port.
 //Taken from lecture slides
 //**********************************************************************
 uint8_t spi_write_read(uint8_t send_byte) {
+	//write data to slave
 	SPDR = send_byte;
+	//read data from slave
 	while (bit_is_clear(SPSR, SPIF)) {}
+	//return the read data
 	return ~(SPDR);
 }//read_spi
 //***********************************************************************************
@@ -166,6 +154,7 @@ uint8_t spi_write_read(uint8_t send_byte) {
 // (1/(16000000/128)*256	= 2ms
 //*************************************************************************
 ISR(TIMER0_OVF_vect){
+  //set flag for read/write
   write_ready = 1;
 }
 //*******************************************************************************
@@ -174,7 +163,8 @@ uint8_t main()
 {
 //set port B bits 4-7 as outputs
 DDRB = (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
-PORTB |= (1<<PB7);
+//drive PWM low
+PORTB &= ~(1<<PB7);
 //set portC to output SH!LD
 DDRC = (1<<DDC0) | (1<<DDC1);
 PORTC = 0;
@@ -186,44 +176,29 @@ sei();         //enable interrupts before entering loop
 int count = 0;
 int i = 0;
 while(1){
-  //insert loop delay for display
-  _delay_ms(1);
-
-  //disable tristate buffer for pushbutton switches
-  PORTB |= (1<<PB5) | (1<<PB6);  //enables unused Y6 output
-  PORTB &= ~(1<<PB4);
-  //bound the count to 0 - 1023
-  if(disp_num > 1023) {
-	  disp_num = 1;
-  }
-  
-  //avoid the colon
-  if(count == 2) {
-	count++;
-  }
-  
-  if(write_ready) {
-	  PORTC |= 0x01;
+  if(write_ready) { //interrupt has occured!
+	  PORTC |= 0x01;  //set the shift register to serial out
 	  
 	  uint8_t spi_in = spi_write_read(the_mode);
-	  for(i = 1; i >= 0; i--) {
-		  if((spi_in == 0x01) & (history[i] == 0x03)) {
-			  inc_dec_flag = 1;
-			  history[i] = 0;
+	  //check spi_in for each encoder (right = 1, left = 0)
+	  for(i = 1; i >= 0; --i) {
+		  //compare past and current encoder output to determine state
+		  if(history[i] == 0x03) {
+			  if(spi_in == 0x01) {
+				  inc_dec_flag = 1;
+			  }
+			  else if(spi_in == 0x02) {
+				  inc_dec_flag = -1;
+			  }
 		  }
-		  else if((spi_in == 0x02) & (history[i] == 0x03)) {
-			  inc_dec_flag = -1;
-			  history[i] = 0;
-		  }
-		  else if(spi_in == 0x03) {
-			  history[i] = 3;
-		  }
+		  //track past encoder output
+		  history [i] = spi_in;
+		  //get the other encoder output values
 		  spi_in >>= 2;
 	  }
-	  
-	  PORTC &= ~(1<<PC0);
 	  PORTC |=  (1<<PC1);                   //send rising edge to regclk on HC595 
-	  PORTC &= ~(1<<PC1);                   //send falling edge to regclk on HC595
+	  PORTC &= ~(1<<PC1) & ~(1<<PC0);       //send falling edge to regclk on HC595
+											//and let the shift register load encoders
 	  
 	  //make PORTA an input port with pullups 
 	  DDRA = 0;
@@ -232,34 +207,46 @@ while(1){
 	  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
 	  //now check each button and increment the count as needed
 	  //uint8_t button_press = 0;
-	  for(i = 0; i < 3; i++) {
+	  for(i = 0; i < 4; i++) {
 		  if(chk_buttons(i)) {
-			  the_mode = (1<<i);
+			  //turn the mode on at button if its off
+			  //turn mode off at button if its on
+			  the_mode ^= (1<<i);
 		  }
 	  }
 	  //disable tristate buffer for pushbutton switches
 	  PORTB |= (1<<PB5) | (1<<PB6);  //enables unused Y6 output
 	  PORTB &= ~(1<<PB4);
 	  
-	  switch(the_mode) {
-		  case 0x00:
-			disp_num += inc_dec_flag;
-		  case 0x01:  //reset to +1 mode if you push button 0
-			disp_num += inc_dec_flag;
-			the_mode = 0x00;
-			break;
-		  case (1<<1):
-			disp_num += inc_dec_flag * 2;
-			break;
-		  case (1<<2):
-			disp_num += inc_dec_flag * 4;
-			break;
-	  }
-	  inc_dec_flag = 0;
-	  
+	  //reset interrupt flag
 	  write_ready = 0;
   }
   
+  if(inc_dec_flag != 0) { //if I need to increment or decrement the display
+	  switch(the_mode) {
+		  case (1<<1):
+		    disp_num += inc_dec_flag;
+		    break;
+		  case (1<<2):
+			disp_num += inc_dec_flag * 2;
+			break;
+		  case (1<<3):
+			disp_num += inc_dec_flag * 4;
+			break;
+
+	  }
+	  //reset flag
+	  inc_dec_flag = 0;
+  }
+
+  
+  //bound the count to 0 - 1023
+  if(disp_num > 1023) {
+	  disp_num = 1;
+  }
+  else if(disp_num < 0) {
+	  disp_num = 1023;
+  }
   //break up the number to display into 4 separate bcd digits
   segsum(bin_to_bcd(disp_num));
   //make PORTA an output
@@ -271,10 +258,15 @@ while(1){
   PORTB &= portb_digit_and[count];
   //update digit to display
   count++;
+  //avoid the colon
+  if(count == 2) {
+	count++;
+  }
   //loop back to first digit when needed
   if(count > 4) {
 	  count = 0;
   }
-
+  //insert loop delay for display
+  _delay_ms(1);
   }//while
 }//main
