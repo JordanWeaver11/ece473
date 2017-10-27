@@ -47,6 +47,8 @@ uint8_t inc_dec_state[2];
 uint8_t enc1_state = 0;
 uint8_t enc2_state = 0;
 
+uint8_t history[2] = {0, 0};
+
 //*****************************************************************************
 //							bin_to_bcd
 //Converts binary number to bdc by modding by 10 and shifting by 4 bits per digit.
@@ -118,7 +120,6 @@ void segsum(uint16_t bcd) {
 		if(i == 2) {
 			i++;
 		}
-		//bcd >>= 4;
 		//extract the rightmost 4 bits
 		digit = bcd & 0xF;
 		//put the extracted digit into segment_data array
@@ -182,39 +183,6 @@ ISR(TIMER0_OVF_vect){
 }
 //*******************************************************************************
 
-uint8_t change_state2(uint8_t new_input) {
-	if(new_input != 0x00) {
-		enc2_state = (state<<2) | new_input;
-	}
-	switch(enc2_state) {
-		//preserve intermediate state
-		case: (0x02<<0)
-			break;
-		//preserve intermediate state
-		case: (0x02<<0) | (0x03<<2)
-			break;
-		//increment
-		case: ((0x02<<0) | (0x03<<2) | (0x01<<4))
-			disp_num++;
-			enc2_state = 0x00;
-			break;
-		//preserve intermediate state
-		case: (0x01<<0)
-			break;
-		//preserve intermediate state
-		case: (0x01<<0) | (0x03<<2)
-			break;
-		//decrement
-		case: ((0x01<<0) | (0x03<<2) | (0x02<<4))
-			disp_num--;
-			enc2_state = 0x00;
-			break;
-		//reset state if it is not going the right way
-		default:
-			enc2_state = 0x00;
-	}
-}
-
 uint8_t main()
 {
 //set port B bits 4-7 as outputs
@@ -270,70 +238,22 @@ while(1){
   
   if(write_ready) {
 	  PORTC |= 0x01;
-	  uint8_t change = spi_write_read(disp_num);
-	  change_state2(change & 0x03);
-	  //disp_num = spi_write_read(disp_num);
-	  /*
-	  int8_t spi_in = spi_write_read(disp_num);
-	  switch(spi_in) {
-		  case 0:
-			enc_prev[RIGHT_ENC] = 0;
-		  case 1:
-			if(enc_prev[RIGHT_ENC] == 0){
-				//Just started decrementing
-				inc_dec_state[RIGHT_ENC] = DECREMENT;
-			}
-			else if(enc_prev[RIGHT_ENC] == 3) {
-				//Just finished incrementing
-				disp_num++;
-				inc_dec_state[RIGHT_ENC] = IDLE;
-			}
-			enc_prev[RIGHT_ENC] = 1;
-			
-		  case 2:
-			if(enc_prev[RIGHT_ENC] == 0) {
-				//just started incrementing
-				inc_dec_state[RIGHT_ENC] = INCREMENT;
-			}
-			else if(enc_prev[RIGHT_ENC] == 3){
-				//just finished decrementing
-				inc_dec_state[RIGHT_ENC] = IDLE;
-				disp_num--;
-			}
-			enc_prev[RIGHT_ENC] = 2;
-			
-		  case 3:
-			enc_prev[RIGHT_ENC] = 3;
-			
-		  case 4:
-			if(enc_prev[LEFT_ENC] == 0) {
-				//just started decrementing
-				inc_dec_state[LEFT_ENC] = DECREMENT;
-			}
-			else if(enc_prev[LEFT_ENC] == 12) {
-				//just finished incrementing
-				inc_dec_state[LEFT_ENC] = IDLE;
-				disp_num++;
-			}
-			enc_prev[LEFT_ENC] = 4;
-			
-		  case 8:
-			if(enc_prev[LEFT_ENC] == 0) {
-				//just started incrementing
-				inc_dec_state[LEFT_ENC] = INCREMENT;
-			}
-			else if(enc_prev[LEFT_ENC] == 12){
-				//just finished decrementing
-				inc_dec_state[LEFT_ENC] = DECREMENT;
-				disp_num--;
-			}
-			enc_prev[LEFT_ENC] = 8;
-			
-		  case 12:
-			enc_prev[RIGHT_ENC] = 12;
-			
+	  
+	  uint8_t spi_in = spi_write_read(disp_num);
+	  for(i = 1; i >= 0; i--) {
+		  if((spi_in == 0x01) & (history[i] == 0x03)) {
+			  disp_num++;
+			  history[i] = 0;
+		  }
+		  else if((spi_in == 0x02) & (history[i] == 0x03)) {
+			  disp_num--;
+			  history[i] = 0;
+		  }
+		  else if(spi_in == 0x03) {
+			  history[i] = 3;
+		  }
+		  spi_in >>= 2;
 	  }
-	  */
 	  
 	  PORTC &= ~(1<<PC0);
 	  PORTC |=  (1<<PC1);                   //send rising edge to regclk on HC595 
