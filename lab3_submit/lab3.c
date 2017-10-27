@@ -14,9 +14,6 @@
 #define LEFT_ENC 0
 #define RIGHT_ENC 1
 
-#define IDLE 0
-#define INCREMENT 1
-#define DECREMENT 2
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -36,6 +33,8 @@ uint16_t disp_num = 0;
 uint8_t write_ready = 0;
 
 uint8_t history[2] = {0, 0};
+uint8_t inc_dec_flag = 0;
+uint8_t the_mode = 0;
 
 //*****************************************************************************
 //							bin_to_bcd
@@ -88,7 +87,7 @@ uint8_t debounce_switch() {
 uint8_t chk_buttons(uint8_t button) {
 	static uint16_t state[8]; //holds present state
 	state[button] = (state[button] << 1) | (!bit_is_clear(PINA, button)) | 0xE000; //update state
-	if(state[button] == 0xf000) {
+	if(state[button] == 0xF000) {
 		return TRUE;  //return true after 12 clears
 	}
 	return FALSE;
@@ -185,14 +184,6 @@ sei();         //enable interrupts before entering loop
 
 int count = 0;
 int i = 0;
-
-//initialize state tracking arrays
-for(i = 0; i < 2; i++) {
-	//initialize previous values to 0
-	enc_prev[i] = 0;
-	//initialize inc/dec state to 0
-	inc_dec_state[i] = 0;
-}
 while(1){
   //insert loop delay for display
   _delay_ms(1);
@@ -227,14 +218,14 @@ while(1){
   if(write_ready) {
 	  PORTC |= 0x01;
 	  
-	  uint8_t spi_in = spi_write_read(disp_num);
+	  uint8_t spi_in = spi_write_read(the_mode);
 	  for(i = 1; i >= 0; i--) {
 		  if((spi_in == 0x01) & (history[i] == 0x03)) {
-			  disp_num++;
+			  inc_dec_flag = 1;
 			  history[i] = 0;
 		  }
 		  else if((spi_in == 0x02) & (history[i] == 0x03)) {
-			  disp_num--;
+			  inc_dec_flag = -1;
 			  history[i] = 0;
 		  }
 		  else if(spi_in == 0x03) {
@@ -246,6 +237,39 @@ while(1){
 	  PORTC &= ~(1<<PC0);
 	  PORTC |=  (1<<PC1);                   //send rising edge to regclk on HC595 
 	  PORTC &= ~(1<<PC1);                   //send falling edge to regclk on HC595
+	  
+	  //make PORTA an input port with pullups 
+	  DDRA = 0;
+	  PORTA = 0xff;
+	  //enable tristate buffer for pushbutton switches
+	  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
+	  //now check each button and increment the count as needed
+	  //uint8_t button_press = 0;
+	  for(i = 0; i < 3; i++) {
+		  if(chk_buttons(i)) {
+			  the_mode = (1<<i);
+		  }
+	  }
+	  //disable tristate buffer for pushbutton switches
+	  PORTB |= (1<<PB5) | (1<<PB6);  //enables unused Y6 output
+	  PORTB &= ~(1<<PB4);
+	  
+	  switch(the_mode) {
+		  case 0x00:
+			disp_num += inc_dec_flag;
+		  case 0x01:  //reset to +1 mode if you push button 0
+			disp_num += inc_dec_flag;
+			the_mode = 0x00;
+			break;
+		  case (1<<1):
+			disp_num += inc_dec_flag * 2;
+			break;
+		  case (1<<2):
+			disp_num += inc_dec_flag * 4;
+			break;
+	  }
+	  inc_dec_flag = 0;
+	  
 	  write_ready = 0;
   }
   
