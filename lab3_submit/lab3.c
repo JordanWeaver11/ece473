@@ -33,7 +33,7 @@ uint16_t disp_num = 0;
 uint8_t write_ready = 0;
 
 uint8_t history[2] = {0, 0};
-uint8_t inc_dec_flag = 0;
+int8_t inc_dec_flag = 0;
 uint8_t the_mode = 0;
 
 //*****************************************************************************
@@ -174,6 +174,7 @@ uint8_t main()
 {
 //set port B bits 4-7 as outputs
 DDRB = (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
+PORTB |= (1<<PB7);
 //set portC to output SH!LD
 DDRC = (1<<DDC0) | (1<<DDC1);
 PORTC = 0;
@@ -187,20 +188,6 @@ int i = 0;
 while(1){
   //insert loop delay for display
   _delay_ms(1);
-/*
-  //make PORTA an input port with pullups 
-  DDRA = 0;
-  PORTA = 0xff;
-  //enable tristate buffer for pushbutton switches
-  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
-  
-  //now check each button and increment the count as needed
-  for(i = 0; i < 8; i++) {
-	  if(chk_buttons(i)) {
-		  disp_num += (1 << i);
-	  }
-  }
-*/
 
   //disable tristate buffer for pushbutton switches
   PORTB |= (1<<PB5) | (1<<PB6);  //enables unused Y6 output
