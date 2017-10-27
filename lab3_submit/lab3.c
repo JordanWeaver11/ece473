@@ -34,18 +34,6 @@ uint8_t portb_digit_and[5] = {~(1<<PB4) & ~(1<<PB5) & ~(1<<PB6), ~(1<<PB5) & ~(1
 
 uint16_t disp_num = 0;
 uint8_t write_ready = 0;
-//enc_prev[encoder] = previous_value
-uint8_t enc_prev[2];
-//inc_dec_state[encoder] = state
-/*
- * 0 = idle
- * 1 = increment
- * 2 = decrement
- */
-uint8_t inc_dec_state[2];
-
-uint8_t enc1_state = 0;
-uint8_t enc2_state = 0;
 
 uint8_t history[2] = {0, 0};
 
