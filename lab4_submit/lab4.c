@@ -18,12 +18,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include "hd44780.h"
+#include "kellen_music.c"
 #include <string.h>
+
+#define SNOOZE_TIME_SEC 10
 
 //-------------------------------
 //LCD STUFF
-char    lcd_string_array[32] = {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
-								' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',};  //holds a string to refresh the LCD
+char    lcd_string_array[32];  //holds a string to refresh the LCD
 //------------------------------
 
 //holds data to be sent to the segments. logic zero turns segment on
@@ -48,7 +50,14 @@ uint8_t alarm_set = 0;
 uint8_t alarm_hours = 0;
 uint8_t alarm_minutes = 0;
 char lcd_str_minutes[16];  //holds string to send to lcd  
-char lcd_str_hour[16];  //holds string to send to lcd 
+char lcd_str_hour[16];  //holds string to send to lcd
+
+uint8_t beat_counter = 0;
+//start high, snooze finish when snooze_couter == 0
+uint8_t snooze_counter = 0;
+uint8_t snooze_flag = 0;
+uint8_t snooze_check = 0;
+uint8_t alarm_on = 0;
 
 //*****************************************************************************
 //							bin_to_bcd
@@ -155,6 +164,16 @@ void tcnt2_init(void){
 }
 //*************************************************************************
 
+void tcnt3_init(void) {
+  //PORTE bit 3
+  //fast PWM, non-inverting, prescale clk/64
+  TCCR3A |= (1<<COM3A1) | (1<<WGM31) | (1<<WGM30);
+  TCCR3B |= (1<<CS30) | (1<<WGM33) | (1<<WGM32);
+  TCCR3C = 0x00;
+  //controls volume, set initially high for quiet output
+  OCR3A = 0xffff;
+}
+
 //**********************************************************************
 //							spi_read
 //Writes to the SPI port and reads from spi port.
@@ -176,19 +195,24 @@ uint8_t spi_write_read(uint8_t send_byte) {
 //When the TCNT0 overflow interrupt occurs, the sec variable is    
 //incremented.
 //TCNT0 interrupts come at 1s internals.
-// 32768 / (2^8 * 128 * 2)
+// 32768 / (2^8 * 128)
 //*************************************************************************
 ISR(TIMER0_OVF_vect){
-  if(!(TIFR & (1<<TOV0))) { //wait until overflow
-	TIFR |= (1<<TOV0);		//clear by writing 1 to TOV0
-	to_ovf_count++;			//extend counter
-	if((to_ovf_count % 128) == 0) {
-		sec++;				//track seconds
-		//toggle colon
-		segment_data[2] = ~(segment_data[2] ^ 0x02);
-	}
+  to_ovf_count++;			//extend counter
+  if((to_ovf_count % 128) == 0) {
+    sec++;				//track seconds
+    //toggle colon
+    segment_data[2] = ~(segment_data[2] ^ 0x02);
+    //update snooze
+    if(snooze_flag) {
+	  snooze_counter++;
+    }
   }
-
+  beat_counter++;
+  if(beat_counter % 8 == 0) {
+    //for note duration (64th notes)
+    beat++;
+  }
 }
 //*******************************************************************************
 
@@ -207,20 +231,30 @@ DDRB |= (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
 //drive PWM low
 PORTB &= ~(1<<PB7);
 //set portC to output SH!LD
-DDRC = (1<<DDC0) | (1<<DDC1);
-PORTC = 0;
+//DDRC = (1<<DDC0) | (1<<DDC1);
+//PORTC = 0;
+
+//setup alarm output
+DDRD |= (ALARM_PIN) | (mute); //see kellen_music.c for pin assignment
+PORTD &= ~(ALARM_PIN) & ~(mute); //remove "mute" setup if using TCNT3 for volume
+//setup alarm volume control
+DDRE |= (1<<DDE3);
+PORTE &= ~(1<<PE3);
 
 tcnt0_init();  //initalize counter timer zero
 tcnt2_init();  //initalize counter timer two
+tcnt3_init();
 spi_init();    //initalize SPI port
 lcd_init();    //initalize LCD (lcd_functions.h)
 clear_display();
 sei();         //enable interrupts before entering loop
 
+music_init();
+
 int digit_count = 0;
 int i = 0;
 
-//Initalize ADC and its ports DDRF  &= ~(_BV(DDF7)); //make port F bit 7 is ADC input  
+//make port F bit 7 is ADC input  
 PORTF &= ~(_BV(PF7));  //port F bit 7 pullups must be off
                        
 ADMUX = (1<<REFS0) | (1<<MUX2) | (1<<MUX1) | (1<<MUX0); //single-ended, input PORTF bit 7, right adjusted, 10 bits
@@ -266,6 +300,12 @@ while(1){
 			case 3:
 				//toggle alarm_set flag to turn alarm on/off
 				alarm_set ^= 0x01;
+				//mute the alarm when I turn it off
+				if((alarm_set == 0) & alarm_on) {
+					music_off();
+					OCR3A = 0xffff;
+					alarm_on = 0;
+				}
 				break;
 			case 4:
 				alarm_minutes++;
@@ -274,6 +314,12 @@ while(1){
 				alarm_hours++;
 				break;
 			case 6:
+				//reset snooze
+				snooze_flag ^= 0x01;
+				snooze_counter = 0;
+				//turn off the alarm
+				music_off();
+				OCR3A = 0xffff;
 				break;
 			case 7:
 				break;
@@ -326,7 +372,6 @@ while(1){
 //LCD DISPLAY---------------------------------------------------------------------------------
   //check for minutes or hour overflow
   if(alarm_minutes > 59) {
-	  alarm_hours++;
 	  alarm_minutes = 0;
   }
   if(alarm_hours > 24) {
@@ -356,6 +401,27 @@ while(1){
   //write the master string to the lcd
   refresh_lcd(lcd_string_array);
 //END LCD DISPLAY---------------------------------------------------------------------------------  
+
+//SNOOZE CHECK------------------------------------------------------------------------------------
+  if(snooze_counter > 10) {
+    snooze_counter = 0;
+    snooze_flag = 0;
+    snooze_check = 0;
+  }
+  if(alarm_on & (snooze_flag == 0) & (snooze_check == 0)) {
+	OCR3A = 0x000f;
+    music_on();
+    snooze_check = 1;
+  }
+//END SNOOZE CHECK--------------------------------------------------------------------------------
+
+//ALARM SOUND------------------------------------------------------------------------------------
+  if(alarm_set & (alarm_hours == hours) & (alarm_minutes == minutes) & (alarm_on == 0)) {
+    OCR3A = 0x000f;
+    alarm_on = 1;
+    music_on();
+  }
+//END ALARM SOUND---------------------------------------------------------------------------------
 
   _delay_ms(1);
   }//while
