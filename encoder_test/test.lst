@@ -1,0 +1,890 @@
+
+test.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         0000001a  00800100  000003fe  00000492  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .text         000003fe  00000000  00000000  00000094  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .bss          00000016  0080011a  0080011a  000004ac  2**0
+                  ALLOC
+  3 .stab         00000d14  00000000  00000000  000004ac  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  4 .stabstr      00000de1  00000000  00000000  000011c0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .comment      00000011  00000000  00000000  00001fa1  2**0
+                  CONTENTS, READONLY
+  6 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00001fb4  2**2
+                  CONTENTS, READONLY
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 46 00 	jmp	0x8c	; 0x8c <__ctors_end>
+   4:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+   8:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+   c:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  10:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  14:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  18:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  1c:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  20:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  24:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  28:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  2c:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  30:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  34:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  38:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  3c:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  40:	0c 94 f0 00 	jmp	0x1e0	; 0x1e0 <__vector_16>
+  44:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  48:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  4c:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  50:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  54:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  58:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  5c:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  60:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  64:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  68:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  6c:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  70:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  74:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  78:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  7c:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  80:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  84:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+  88:	0c 94 65 00 	jmp	0xca	; 0xca <__bad_interrupt>
+
+0000008c <__ctors_end>:
+  8c:	11 24       	eor	r1, r1
+  8e:	1f be       	out	0x3f, r1	; 63
+  90:	cf ef       	ldi	r28, 0xFF	; 255
+  92:	d0 e1       	ldi	r29, 0x10	; 16
+  94:	de bf       	out	0x3e, r29	; 62
+  96:	cd bf       	out	0x3d, r28	; 61
+
+00000098 <__do_copy_data>:
+  98:	11 e0       	ldi	r17, 0x01	; 1
+  9a:	a0 e0       	ldi	r26, 0x00	; 0
+  9c:	b1 e0       	ldi	r27, 0x01	; 1
+  9e:	ee ef       	ldi	r30, 0xFE	; 254
+  a0:	f3 e0       	ldi	r31, 0x03	; 3
+  a2:	00 e0       	ldi	r16, 0x00	; 0
+  a4:	0b bf       	out	0x3b, r16	; 59
+  a6:	02 c0       	rjmp	.+4      	; 0xac <__do_copy_data+0x14>
+  a8:	07 90       	elpm	r0, Z+
+  aa:	0d 92       	st	X+, r0
+  ac:	aa 31       	cpi	r26, 0x1A	; 26
+  ae:	b1 07       	cpc	r27, r17
+  b0:	d9 f7       	brne	.-10     	; 0xa8 <__do_copy_data+0x10>
+
+000000b2 <__do_clear_bss>:
+  b2:	21 e0       	ldi	r18, 0x01	; 1
+  b4:	aa e1       	ldi	r26, 0x1A	; 26
+  b6:	b1 e0       	ldi	r27, 0x01	; 1
+  b8:	01 c0       	rjmp	.+2      	; 0xbc <.do_clear_bss_start>
+
+000000ba <.do_clear_bss_loop>:
+  ba:	1d 92       	st	X+, r1
+
+000000bc <.do_clear_bss_start>:
+  bc:	a0 33       	cpi	r26, 0x30	; 48
+  be:	b2 07       	cpc	r27, r18
+  c0:	e1 f7       	brne	.-8      	; 0xba <.do_clear_bss_loop>
+  c2:	0e 94 ff 00 	call	0x1fe	; 0x1fe <main>
+  c6:	0c 94 fd 01 	jmp	0x3fa	; 0x3fa <_exit>
+
+000000ca <__bad_interrupt>:
+  ca:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+000000ce <bin_to_bcd>:
+
+//*****************************************************************************
+//							bin_to_bcd
+//Converts binary number to bdc by modding by 10 and shifting by 4 bits per digit.
+
+uint16_t bin_to_bcd(uint16_t i) {
+  ce:	cf 93       	push	r28
+  d0:	df 93       	push	r29
+  d2:	ac 01       	movw	r20, r24
+    uint16_t binaryShift = 0;
+    uint16_t digit;
+    uint16_t bcd = 0;
+    while (i > 0) {
+  d4:	c0 e0       	ldi	r28, 0x00	; 0
+  d6:	d0 e0       	ldi	r29, 0x00	; 0
+  d8:	89 2b       	or	r24, r25
+  da:	39 f1       	breq	.+78     	; 0x12a <bin_to_bcd+0x5c>
+  dc:	e0 e0       	ldi	r30, 0x00	; 0
+  de:	f0 e0       	ldi	r31, 0x00	; 0
+        //mod by 10 each time to move from 1s to 10s, so on
+        digit = i % 10;
+  e0:	9a 01       	movw	r18, r20
+  e2:	ad ec       	ldi	r26, 0xCD	; 205
+  e4:	bc ec       	ldi	r27, 0xCC	; 204
+  e6:	0e 94 ee 01 	call	0x3dc	; 0x3dc <__umulhisi3>
+  ea:	96 95       	lsr	r25
+  ec:	87 95       	ror	r24
+  ee:	96 95       	lsr	r25
+  f0:	87 95       	ror	r24
+  f2:	96 95       	lsr	r25
+  f4:	87 95       	ror	r24
+  f6:	bc 01       	movw	r22, r24
+  f8:	66 0f       	add	r22, r22
+  fa:	77 1f       	adc	r23, r23
+  fc:	9c 01       	movw	r18, r24
+  fe:	22 0f       	add	r18, r18
+ 100:	33 1f       	adc	r19, r19
+ 102:	22 0f       	add	r18, r18
+ 104:	33 1f       	adc	r19, r19
+ 106:	22 0f       	add	r18, r18
+ 108:	33 1f       	adc	r19, r19
+ 10a:	26 0f       	add	r18, r22
+ 10c:	37 1f       	adc	r19, r23
+ 10e:	42 1b       	sub	r20, r18
+ 110:	53 0b       	sbc	r21, r19
+        //extract each decimal digit encoded with 4 bits
+        bcd += (digit << binaryShift);
+ 112:	0e 2e       	mov	r0, r30
+ 114:	02 c0       	rjmp	.+4      	; 0x11a <bin_to_bcd+0x4c>
+ 116:	44 0f       	add	r20, r20
+ 118:	55 1f       	adc	r21, r21
+ 11a:	0a 94       	dec	r0
+ 11c:	e2 f7       	brpl	.-8      	; 0x116 <bin_to_bcd+0x48>
+ 11e:	c4 0f       	add	r28, r20
+ 120:	d5 1f       	adc	r29, r21
+        //shift another 4 bits to get the next digit
+        binaryShift += 4;
+ 122:	34 96       	adiw	r30, 0x04	; 4
+        i /= 10;
+ 124:	ac 01       	movw	r20, r24
+
+uint16_t bin_to_bcd(uint16_t i) {
+    uint16_t binaryShift = 0;
+    uint16_t digit;
+    uint16_t bcd = 0;
+    while (i > 0) {
+ 126:	89 2b       	or	r24, r25
+ 128:	d9 f6       	brne	.-74     	; 0xe0 <bin_to_bcd+0x12>
+        //shift another 4 bits to get the next digit
+        binaryShift += 4;
+        i /= 10;
+    }
+    return bcd;
+}
+ 12a:	ce 01       	movw	r24, r28
+ 12c:	df 91       	pop	r29
+ 12e:	cf 91       	pop	r28
+ 130:	08 95       	ret
+
+00000132 <chk_buttons>:
+//push so a debounce and toggle function can be implemented at the same time.  
+//Adapted to check all buttons from Ganssel's "Guide to Debouncing"            
+//Expects active low pushbuttons on PINA port.  Debounce time is determined by 
+//external loop delay times 12. 
+//
+uint8_t chk_buttons(uint8_t button) {
+ 132:	48 2f       	mov	r20, r24
+	static uint16_t state[8]; //holds present state
+	state[button] = (state[button] << 1) | (!bit_is_clear(PINA, button)) | 0xFE00; //update state
+ 134:	e8 2f       	mov	r30, r24
+ 136:	f0 e0       	ldi	r31, 0x00	; 0
+ 138:	99 b3       	in	r25, 0x19	; 25
+ 13a:	ee 0f       	add	r30, r30
+ 13c:	ff 1f       	adc	r31, r31
+ 13e:	e0 5e       	subi	r30, 0xE0	; 224
+ 140:	fe 4f       	sbci	r31, 0xFE	; 254
+ 142:	20 81       	ld	r18, Z
+ 144:	31 81       	ldd	r19, Z+1	; 0x01
+ 146:	22 0f       	add	r18, r18
+ 148:	33 1f       	adc	r19, r19
+ 14a:	3e 6f       	ori	r19, 0xFE	; 254
+ 14c:	89 2f       	mov	r24, r25
+ 14e:	90 e0       	ldi	r25, 0x00	; 0
+ 150:	02 c0       	rjmp	.+4      	; 0x156 <chk_buttons+0x24>
+ 152:	95 95       	asr	r25
+ 154:	87 95       	ror	r24
+ 156:	4a 95       	dec	r20
+ 158:	e2 f7       	brpl	.-8      	; 0x152 <chk_buttons+0x20>
+ 15a:	81 70       	andi	r24, 0x01	; 1
+ 15c:	99 27       	eor	r25, r25
+ 15e:	28 2b       	or	r18, r24
+ 160:	39 2b       	or	r19, r25
+ 162:	31 83       	std	Z+1, r19	; 0x01
+ 164:	20 83       	st	Z, r18
+	if(state[button] == 0xFF00) {
+ 166:	81 e0       	ldi	r24, 0x01	; 1
+ 168:	21 15       	cp	r18, r1
+ 16a:	3f 4f       	sbci	r19, 0xFF	; 255
+ 16c:	09 f0       	breq	.+2      	; 0x170 <chk_buttons+0x3e>
+ 16e:	80 e0       	ldi	r24, 0x00	; 0
+		return TRUE;  //return true after 8 clears
+	}
+	return FALSE;
+}
+ 170:	08 95       	ret
+
+00000172 <segsum>:
+//***********************************************************************************
+//                                   segment_sum                                    
+//takes a 16-bit binary input value and places the appropriate equivalent 4 digit 
+//BCD segment code in the array segment_data for display.                       
+//array is loaded at exit as:  digit3|digit2||colon|digit1|digit0|
+void segsum(uint16_t bcd) {
+ 172:	9c 01       	movw	r18, r24
+    uint8_t digit;
+    uint8_t i = 0;
+	for(i = 0; i < 5; i++) {
+ 174:	90 e0       	ldi	r25, 0x00	; 0
+ 176:	10 c0       	rjmp	.+32     	; 0x198 <segsum+0x26>
+			i++;
+		}
+		//extract the rightmost 4 bits
+		digit = bcd & 0xF;
+		//put the extracted digit into segment_data array
+		segment_data[i] = digit;
+ 178:	e9 2f       	mov	r30, r25
+ 17a:	f0 e0       	ldi	r31, 0x00	; 0
+ 17c:	eb 5e       	subi	r30, 0xEB	; 235
+ 17e:	fe 4f       	sbci	r31, 0xFE	; 254
+		//ignore colon on display
+		if(i == 2) {
+			i++;
+		}
+		//extract the rightmost 4 bits
+		digit = bcd & 0xF;
+ 180:	82 2f       	mov	r24, r18
+ 182:	8f 70       	andi	r24, 0x0F	; 15
+		//put the extracted digit into segment_data array
+		segment_data[i] = digit;
+ 184:	80 83       	st	Z, r24
+		//shift the bcd value to move to the next digit
+		bcd >>= 4;
+ 186:	32 95       	swap	r19
+ 188:	22 95       	swap	r18
+ 18a:	2f 70       	andi	r18, 0x0F	; 15
+ 18c:	23 27       	eor	r18, r19
+ 18e:	3f 70       	andi	r19, 0x0F	; 15
+ 190:	23 27       	eor	r18, r19
+//BCD segment code in the array segment_data for display.                       
+//array is loaded at exit as:  digit3|digit2||colon|digit1|digit0|
+void segsum(uint16_t bcd) {
+    uint8_t digit;
+    uint8_t i = 0;
+	for(i = 0; i < 5; i++) {
+ 192:	9f 5f       	subi	r25, 0xFF	; 255
+ 194:	95 30       	cpi	r25, 0x05	; 5
+ 196:	70 f4       	brcc	.+28     	; 0x1b4 <segsum+0x42>
+		//ignore colon on display
+		if(i == 2) {
+ 198:	92 30       	cpi	r25, 0x02	; 2
+ 19a:	71 f7       	brne	.-36     	; 0x178 <segsum+0x6>
+			i++;
+		}
+		//extract the rightmost 4 bits
+		digit = bcd & 0xF;
+ 19c:	82 2f       	mov	r24, r18
+ 19e:	8f 70       	andi	r24, 0x0F	; 15
+		//put the extracted digit into segment_data array
+		segment_data[i] = digit;
+ 1a0:	80 93 18 01 	sts	0x0118, r24
+		//shift the bcd value to move to the next digit
+		bcd >>= 4;
+ 1a4:	32 95       	swap	r19
+ 1a6:	22 95       	swap	r18
+ 1a8:	2f 70       	andi	r18, 0x0F	; 15
+ 1aa:	23 27       	eor	r18, r19
+ 1ac:	3f 70       	andi	r19, 0x0F	; 15
+ 1ae:	23 27       	eor	r18, r19
+//BCD segment code in the array segment_data for display.                       
+//array is loaded at exit as:  digit3|digit2||colon|digit1|digit0|
+void segsum(uint16_t bcd) {
+    uint8_t digit;
+    uint8_t i = 0;
+	for(i = 0; i < 5; i++) {
+ 1b0:	94 e0       	ldi	r25, 0x04	; 4
+ 1b2:	e2 cf       	rjmp	.-60     	; 0x178 <segsum+0x6>
+ 1b4:	08 95       	ret
+
+000001b6 <spi_init>:
+
+//***********************************************************************
+//                            spi_init                               
+//**********************************************************************
+void spi_init(void){
+  DDRB  |= 0x07; //output mode for SS, MOSI, SCLK
+ 1b6:	87 b3       	in	r24, 0x17	; 23
+ 1b8:	87 60       	ori	r24, 0x07	; 7
+ 1ba:	87 bb       	out	0x17, r24	; 23
+  //set ss low
+  //PORTB &= ~(1<<PB0);
+
+  SPCR   = (1<<MSTR) | (1<<SPE); //master mode, clk low on idle, leading edge sample
+ 1bc:	80 e5       	ldi	r24, 0x50	; 80
+ 1be:	8d b9       	out	0x0d, r24	; 13
+
+  SPSR   = (1<<SPI2X); //choose double speed operation
+ 1c0:	81 e0       	ldi	r24, 0x01	; 1
+ 1c2:	8e b9       	out	0x0e, r24	; 14
+ 1c4:	08 95       	ret
+
+000001c6 <tcnt0_init>:
+//***********************************************************************
+//                              tcnt0_init                             
+//
+//
+void tcnt0_init(void){
+  TIMSK |= (1<<TOIE0);             //enable interrupts
+ 1c6:	87 b7       	in	r24, 0x37	; 55
+ 1c8:	81 60       	ori	r24, 0x01	; 1
+ 1ca:	87 bf       	out	0x37, r24	; 55
+  TCCR0 |= (1<<CS02) | (1<<CS00);  //normal mode, prescale by 128
+ 1cc:	83 b7       	in	r24, 0x33	; 51
+ 1ce:	85 60       	ori	r24, 0x05	; 5
+ 1d0:	83 bf       	out	0x33, r24	; 51
+ 1d2:	08 95       	ret
+
+000001d4 <spi_write_read>:
+//Writes to the SPI port and reads from spi port.
+//Taken from lecture slides
+//**********************************************************************
+uint8_t spi_write_read(uint8_t send_byte) {
+	//write data to slave
+	SPDR = send_byte;
+ 1d4:	8f b9       	out	0x0f, r24	; 15
+	//read data from slave
+	while (bit_is_clear(SPSR, SPIF)) {}
+ 1d6:	77 9b       	sbis	0x0e, 7	; 14
+ 1d8:	fe cf       	rjmp	.-4      	; 0x1d6 <spi_write_read+0x2>
+	//return the read data
+	return ~(SPDR);
+ 1da:	8f b1       	in	r24, 0x0f	; 15
+}//read_spi
+ 1dc:	80 95       	com	r24
+ 1de:	08 95       	ret
+
+000001e0 <__vector_16>:
+//TCNT0 interrupts come at 8ms internals.
+// 1/16000000				= 62.5nS
+// 1/(16000000/128)			= 8us
+// (1/(16000000/128)*256	= 2ms
+//*************************************************************************
+ISR(TIMER0_OVF_vect){
+ 1e0:	1f 92       	push	r1
+ 1e2:	0f 92       	push	r0
+ 1e4:	0f b6       	in	r0, 0x3f	; 63
+ 1e6:	0f 92       	push	r0
+ 1e8:	11 24       	eor	r1, r1
+ 1ea:	8f 93       	push	r24
+  //set flag for read/write
+  write_ready = 1;
+ 1ec:	81 e0       	ldi	r24, 0x01	; 1
+ 1ee:	80 93 1d 01 	sts	0x011D, r24
+}
+ 1f2:	8f 91       	pop	r24
+ 1f4:	0f 90       	pop	r0
+ 1f6:	0f be       	out	0x3f, r0	; 63
+ 1f8:	0f 90       	pop	r0
+ 1fa:	1f 90       	pop	r1
+ 1fc:	18 95       	reti
+
+000001fe <main>:
+//*******************************************************************************
+
+uint8_t main()
+{
+//set port B bits 4-7 as outputs
+DDRB = (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
+ 1fe:	80 ef       	ldi	r24, 0xF0	; 240
+ 200:	87 bb       	out	0x17, r24	; 23
+//drive PWM low
+PORTB &= ~(1<<PB7);
+ 202:	c7 98       	cbi	0x18, 7	; 24
+//set portC to output SH!LD
+DDRC = (1<<DDC0) | (1<<DDC1);
+ 204:	83 e0       	ldi	r24, 0x03	; 3
+ 206:	84 bb       	out	0x14, r24	; 20
+PORTC = 0;
+ 208:	15 ba       	out	0x15, r1	; 21
+//***********************************************************************
+//                              tcnt0_init                             
+//
+//
+void tcnt0_init(void){
+  TIMSK |= (1<<TOIE0);             //enable interrupts
+ 20a:	87 b7       	in	r24, 0x37	; 55
+ 20c:	81 60       	ori	r24, 0x01	; 1
+ 20e:	87 bf       	out	0x37, r24	; 55
+  TCCR0 |= (1<<CS02) | (1<<CS00);  //normal mode, prescale by 128
+ 210:	83 b7       	in	r24, 0x33	; 51
+ 212:	85 60       	ori	r24, 0x05	; 5
+ 214:	83 bf       	out	0x33, r24	; 51
+
+//***********************************************************************
+//                            spi_init                               
+//**********************************************************************
+void spi_init(void){
+  DDRB  |= 0x07; //output mode for SS, MOSI, SCLK
+ 216:	87 b3       	in	r24, 0x17	; 23
+ 218:	87 60       	ori	r24, 0x07	; 7
+ 21a:	87 bb       	out	0x17, r24	; 23
+  //set ss low
+  //PORTB &= ~(1<<PB0);
+
+  SPCR   = (1<<MSTR) | (1<<SPE); //master mode, clk low on idle, leading edge sample
+ 21c:	80 e5       	ldi	r24, 0x50	; 80
+ 21e:	8d b9       	out	0x0d, r24	; 13
+
+  SPSR   = (1<<SPI2X); //choose double speed operation
+ 220:	81 e0       	ldi	r24, 0x01	; 1
+ 222:	8e b9       	out	0x0e, r24	; 14
+DDRC = (1<<DDC0) | (1<<DDC1);
+PORTC = 0;
+
+tcnt0_init();  //initalize counter timer zero
+spi_init();    //initalize SPI port
+sei();         //enable interrupts before entering loop
+ 224:	78 94       	sei
+
+int count = 0;
+ 226:	c0 e0       	ldi	r28, 0x00	; 0
+ 228:	d0 e0       	ldi	r29, 0x00	; 0
+	  PORTC &= ~(1<<PC1) & ~(1<<PC0);       //send falling edge to regclk on HC595
+											//and let the shift register load encoders
+	  
+	  //make PORTA an input port with pullups 
+	  DDRA = 0;
+	  PORTA = 0xff;
+ 22a:	bb 24       	eor	r11, r11
+ 22c:	ba 94       	dec	r11
+	  //enable tristate buffer for pushbutton switches
+	  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
+ 22e:	10 e7       	ldi	r17, 0x70	; 112
+ 230:	a1 2e       	mov	r10, r17
+  //bound the count to 0 - 1023
+  if(disp_num > 1023) {
+	  disp_num = 1;
+  }
+  else if(disp_num < 0) {
+	  disp_num = 1023;
+ 232:	ee 24       	eor	r14, r14
+ 234:	ea 94       	dec	r14
+ 236:	03 e0       	ldi	r16, 0x03	; 3
+ 238:	f0 2e       	mov	r15, r16
+  */
+
+  
+  //bound the count to 0 - 1023
+  if(disp_num > 1023) {
+	  disp_num = 1;
+ 23a:	01 e0       	ldi	r16, 0x01	; 1
+ 23c:	10 e0       	ldi	r17, 0x00	; 0
+sei();         //enable interrupts before entering loop
+
+int count = 0;
+int i = 0;
+while(1){
+  if(write_ready) { //interrupt has occured!
+ 23e:	80 91 1d 01 	lds	r24, 0x011D
+ 242:	88 23       	and	r24, r24
+ 244:	a1 f1       	breq	.+104    	; 0x2ae <main+0xb0>
+	  PORTC |= 0x01;  //set the shift register to serial out
+ 246:	a8 9a       	sbi	0x15, 0	; 21
+	  
+	  uint8_t spi_in = spi_write_read(the_mode);
+ 248:	80 91 00 01 	lds	r24, 0x0100
+//Writes to the SPI port and reads from spi port.
+//Taken from lecture slides
+//**********************************************************************
+uint8_t spi_write_read(uint8_t send_byte) {
+	//write data to slave
+	SPDR = send_byte;
+ 24c:	8f b9       	out	0x0f, r24	; 15
+	//read data from slave
+	while (bit_is_clear(SPSR, SPIF)) {}
+ 24e:	77 9b       	sbis	0x0e, 7	; 14
+ 250:	fe cf       	rjmp	.-4      	; 0x24e <main+0x50>
+	//return the read data
+	return ~(SPDR);
+ 252:	8f b1       	in	r24, 0x0f	; 15
+ 254:	80 95       	com	r24
+		  history [i] = spi_in;
+		  //get the other encoder output values
+		  spi_in >>= 2;
+	  }
+	  */
+	  the_mode = spi_in;
+ 256:	80 93 00 01 	sts	0x0100, r24
+	  PORTC |=  (1<<PC1);                   //send rising edge to regclk on HC595 
+ 25a:	a9 9a       	sbi	0x15, 1	; 21
+	  PORTC &= ~(1<<PC1) & ~(1<<PC0);       //send falling edge to regclk on HC595
+ 25c:	85 b3       	in	r24, 0x15	; 21
+ 25e:	8c 7f       	andi	r24, 0xFC	; 252
+ 260:	85 bb       	out	0x15, r24	; 21
+											//and let the shift register load encoders
+	  
+	  //make PORTA an input port with pullups 
+	  DDRA = 0;
+ 262:	1a ba       	out	0x1a, r1	; 26
+	  PORTA = 0xff;
+ 264:	bb ba       	out	0x1b, r11	; 27
+	  //enable tristate buffer for pushbutton switches
+	  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
+ 266:	a8 ba       	out	0x18, r10	; 24
+ 268:	e0 e2       	ldi	r30, 0x20	; 32
+ 26a:	f1 e0       	ldi	r31, 0x01	; 1
+	  //now check each button and increment the count as needed
+	  //uint8_t button_press = 0;
+	  for(i = 0; i < 4; i++) {
+ 26c:	20 e0       	ldi	r18, 0x00	; 0
+ 26e:	30 e0       	ldi	r19, 0x00	; 0
+//Expects active low pushbuttons on PINA port.  Debounce time is determined by 
+//external loop delay times 12. 
+//
+uint8_t chk_buttons(uint8_t button) {
+	static uint16_t state[8]; //holds present state
+	state[button] = (state[button] << 1) | (!bit_is_clear(PINA, button)) | 0xFE00; //update state
+ 270:	99 b3       	in	r25, 0x19	; 25
+ 272:	40 81       	ld	r20, Z
+ 274:	51 81       	ldd	r21, Z+1	; 0x01
+ 276:	44 0f       	add	r20, r20
+ 278:	55 1f       	adc	r21, r21
+ 27a:	89 2f       	mov	r24, r25
+ 27c:	90 e0       	ldi	r25, 0x00	; 0
+ 27e:	02 2e       	mov	r0, r18
+ 280:	02 c0       	rjmp	.+4      	; 0x286 <main+0x88>
+ 282:	95 95       	asr	r25
+ 284:	87 95       	ror	r24
+ 286:	0a 94       	dec	r0
+ 288:	e2 f7       	brpl	.-8      	; 0x282 <main+0x84>
+ 28a:	81 70       	andi	r24, 0x01	; 1
+ 28c:	99 27       	eor	r25, r25
+ 28e:	84 2b       	or	r24, r20
+ 290:	95 2b       	or	r25, r21
+ 292:	9e 6f       	ori	r25, 0xFE	; 254
+ 294:	81 93       	st	Z+, r24
+ 296:	91 93       	st	Z+, r25
+	  PORTA = 0xff;
+	  //enable tristate buffer for pushbutton switches
+	  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
+	  //now check each button and increment the count as needed
+	  //uint8_t button_press = 0;
+	  for(i = 0; i < 4; i++) {
+ 298:	2f 5f       	subi	r18, 0xFF	; 255
+ 29a:	3f 4f       	sbci	r19, 0xFF	; 255
+ 29c:	24 30       	cpi	r18, 0x04	; 4
+ 29e:	31 05       	cpc	r19, r1
+ 2a0:	39 f7       	brne	.-50     	; 0x270 <main+0x72>
+			  //turn mode off at button if its on
+			  //the_mode ^= (1<<i);
+		  }
+	  }
+	  //disable tristate buffer for pushbutton switches
+	  PORTB |= (1<<PB5) | (1<<PB6);  //enables unused Y6 output
+ 2a2:	88 b3       	in	r24, 0x18	; 24
+ 2a4:	80 66       	ori	r24, 0x60	; 96
+ 2a6:	88 bb       	out	0x18, r24	; 24
+	  PORTB &= ~(1<<PB4);
+ 2a8:	c4 98       	cbi	0x18, 4	; 24
+	  
+	  //reset interrupt flag
+	  write_ready = 0;
+ 2aa:	10 92 1d 01 	sts	0x011D, r1
+  }
+  */
+
+  
+  //bound the count to 0 - 1023
+  if(disp_num > 1023) {
+ 2ae:	40 91 1e 01 	lds	r20, 0x011E
+ 2b2:	50 91 1f 01 	lds	r21, 0x011F
+ 2b6:	41 15       	cp	r20, r1
+ 2b8:	24 e0       	ldi	r18, 0x04	; 4
+ 2ba:	52 07       	cpc	r21, r18
+ 2bc:	0c f4       	brge	.+2      	; 0x2c0 <main+0xc2>
+ 2be:	7a c0       	rjmp	.+244    	; 0x3b4 <main+0x1b6>
+	  disp_num = 1;
+ 2c0:	10 93 1f 01 	sts	0x011F, r17
+ 2c4:	00 93 1e 01 	sts	0x011E, r16
+ 2c8:	41 e0       	ldi	r20, 0x01	; 1
+ 2ca:	50 e0       	ldi	r21, 0x00	; 0
+	  PORTA = 0xff;
+	  //enable tristate buffer for pushbutton switches
+	  PORTB = (1<<PB4) | (1<<PB5) | (1<<PB6);
+	  //now check each button and increment the count as needed
+	  //uint8_t button_press = 0;
+	  for(i = 0; i < 4; i++) {
+ 2cc:	e0 e0       	ldi	r30, 0x00	; 0
+ 2ce:	f0 e0       	ldi	r31, 0x00	; 0
+ 2d0:	c1 2c       	mov	r12, r1
+ 2d2:	d1 2c       	mov	r13, r1
+    uint16_t binaryShift = 0;
+    uint16_t digit;
+    uint16_t bcd = 0;
+    while (i > 0) {
+        //mod by 10 each time to move from 1s to 10s, so on
+        digit = i % 10;
+ 2d4:	9a 01       	movw	r18, r20
+ 2d6:	ad ec       	ldi	r26, 0xCD	; 205
+ 2d8:	bc ec       	ldi	r27, 0xCC	; 204
+ 2da:	0e 94 ee 01 	call	0x3dc	; 0x3dc <__umulhisi3>
+ 2de:	96 95       	lsr	r25
+ 2e0:	87 95       	ror	r24
+ 2e2:	96 95       	lsr	r25
+ 2e4:	87 95       	ror	r24
+ 2e6:	96 95       	lsr	r25
+ 2e8:	87 95       	ror	r24
+ 2ea:	bc 01       	movw	r22, r24
+ 2ec:	66 0f       	add	r22, r22
+ 2ee:	77 1f       	adc	r23, r23
+ 2f0:	9c 01       	movw	r18, r24
+ 2f2:	22 0f       	add	r18, r18
+ 2f4:	33 1f       	adc	r19, r19
+ 2f6:	22 0f       	add	r18, r18
+ 2f8:	33 1f       	adc	r19, r19
+ 2fa:	22 0f       	add	r18, r18
+ 2fc:	33 1f       	adc	r19, r19
+ 2fe:	26 0f       	add	r18, r22
+ 300:	37 1f       	adc	r19, r23
+ 302:	42 1b       	sub	r20, r18
+ 304:	53 0b       	sbc	r21, r19
+        //extract each decimal digit encoded with 4 bits
+        bcd += (digit << binaryShift);
+ 306:	0c 2c       	mov	r0, r12
+ 308:	02 c0       	rjmp	.+4      	; 0x30e <main+0x110>
+ 30a:	44 0f       	add	r20, r20
+ 30c:	55 1f       	adc	r21, r21
+ 30e:	0a 94       	dec	r0
+ 310:	e2 f7       	brpl	.-8      	; 0x30a <main+0x10c>
+ 312:	e4 0f       	add	r30, r20
+ 314:	f5 1f       	adc	r31, r21
+        //shift another 4 bits to get the next digit
+        binaryShift += 4;
+ 316:	24 e0       	ldi	r18, 0x04	; 4
+ 318:	c2 0e       	add	r12, r18
+ 31a:	d1 1c       	adc	r13, r1
+        i /= 10;
+ 31c:	ac 01       	movw	r20, r24
+
+uint16_t bin_to_bcd(uint16_t i) {
+    uint16_t binaryShift = 0;
+    uint16_t digit;
+    uint16_t bcd = 0;
+    while (i > 0) {
+ 31e:	89 2b       	or	r24, r25
+ 320:	c9 f6       	brne	.-78     	; 0x2d4 <main+0xd6>
+//BCD segment code in the array segment_data for display.                       
+//array is loaded at exit as:  digit3|digit2||colon|digit1|digit0|
+void segsum(uint16_t bcd) {
+    uint8_t digit;
+    uint8_t i = 0;
+	for(i = 0; i < 5; i++) {
+ 322:	80 e0       	ldi	r24, 0x00	; 0
+ 324:	10 c0       	rjmp	.+32     	; 0x346 <main+0x148>
+			i++;
+		}
+		//extract the rightmost 4 bits
+		digit = bcd & 0xF;
+		//put the extracted digit into segment_data array
+		segment_data[i] = digit;
+ 326:	a8 2f       	mov	r26, r24
+ 328:	b0 e0       	ldi	r27, 0x00	; 0
+ 32a:	ab 5e       	subi	r26, 0xEB	; 235
+ 32c:	be 4f       	sbci	r27, 0xFE	; 254
+		//ignore colon on display
+		if(i == 2) {
+			i++;
+		}
+		//extract the rightmost 4 bits
+		digit = bcd & 0xF;
+ 32e:	9e 2f       	mov	r25, r30
+ 330:	9f 70       	andi	r25, 0x0F	; 15
+		//put the extracted digit into segment_data array
+		segment_data[i] = digit;
+ 332:	9c 93       	st	X, r25
+		//shift the bcd value to move to the next digit
+		bcd >>= 4;
+ 334:	f2 95       	swap	r31
+ 336:	e2 95       	swap	r30
+ 338:	ef 70       	andi	r30, 0x0F	; 15
+ 33a:	ef 27       	eor	r30, r31
+ 33c:	ff 70       	andi	r31, 0x0F	; 15
+ 33e:	ef 27       	eor	r30, r31
+//BCD segment code in the array segment_data for display.                       
+//array is loaded at exit as:  digit3|digit2||colon|digit1|digit0|
+void segsum(uint16_t bcd) {
+    uint8_t digit;
+    uint8_t i = 0;
+	for(i = 0; i < 5; i++) {
+ 340:	8f 5f       	subi	r24, 0xFF	; 255
+ 342:	85 30       	cpi	r24, 0x05	; 5
+ 344:	70 f4       	brcc	.+28     	; 0x362 <main+0x164>
+		//ignore colon on display
+		if(i == 2) {
+ 346:	82 30       	cpi	r24, 0x02	; 2
+ 348:	71 f7       	brne	.-36     	; 0x326 <main+0x128>
+			i++;
+		}
+		//extract the rightmost 4 bits
+		digit = bcd & 0xF;
+ 34a:	8e 2f       	mov	r24, r30
+ 34c:	8f 70       	andi	r24, 0x0F	; 15
+		//put the extracted digit into segment_data array
+		segment_data[i] = digit;
+ 34e:	80 93 18 01 	sts	0x0118, r24
+		//shift the bcd value to move to the next digit
+		bcd >>= 4;
+ 352:	f2 95       	swap	r31
+ 354:	e2 95       	swap	r30
+ 356:	ef 70       	andi	r30, 0x0F	; 15
+ 358:	ef 27       	eor	r30, r31
+ 35a:	ff 70       	andi	r31, 0x0F	; 15
+ 35c:	ef 27       	eor	r30, r31
+//BCD segment code in the array segment_data for display.                       
+//array is loaded at exit as:  digit3|digit2||colon|digit1|digit0|
+void segsum(uint16_t bcd) {
+    uint8_t digit;
+    uint8_t i = 0;
+	for(i = 0; i < 5; i++) {
+ 35e:	84 e0       	ldi	r24, 0x04	; 4
+ 360:	e2 cf       	rjmp	.-60     	; 0x326 <main+0x128>
+	  disp_num = 1023;
+  }
+  //break up the number to display into 4 separate bcd digits
+  segsum(bin_to_bcd(disp_num));
+  //make PORTA an output
+  DDRA = 0xff;
+ 362:	ba ba       	out	0x1a, r11	; 26
+  //write the digits to the 7-seg display
+  PORTA = dec_to_7seg[segment_data[count]];
+ 364:	fe 01       	movw	r30, r28
+ 366:	eb 5e       	subi	r30, 0xEB	; 235
+ 368:	fe 4f       	sbci	r31, 0xFE	; 254
+ 36a:	e0 81       	ld	r30, Z
+ 36c:	f0 e0       	ldi	r31, 0x00	; 0
+ 36e:	e5 5f       	subi	r30, 0xF5	; 245
+ 370:	fe 4f       	sbci	r31, 0xFE	; 254
+ 372:	80 81       	ld	r24, Z
+ 374:	8b bb       	out	0x1b, r24	; 27
+  //select the correct digit
+  PORTB |= portb_digit_or[count];
+ 376:	98 b3       	in	r25, 0x18	; 24
+ 378:	fe 01       	movw	r30, r28
+ 37a:	ea 5f       	subi	r30, 0xFA	; 250
+ 37c:	fe 4f       	sbci	r31, 0xFE	; 254
+ 37e:	80 81       	ld	r24, Z
+ 380:	89 2b       	or	r24, r25
+ 382:	88 bb       	out	0x18, r24	; 24
+  PORTB &= portb_digit_and[count];
+ 384:	98 b3       	in	r25, 0x18	; 24
+ 386:	fe 01       	movw	r30, r28
+ 388:	ef 5f       	subi	r30, 0xFF	; 255
+ 38a:	fe 4f       	sbci	r31, 0xFE	; 254
+ 38c:	80 81       	ld	r24, Z
+ 38e:	89 23       	and	r24, r25
+ 390:	88 bb       	out	0x18, r24	; 24
+  //update digit to display
+  count++;
+ 392:	ce 01       	movw	r24, r28
+ 394:	01 96       	adiw	r24, 0x01	; 1
+  //avoid the colon
+  if(count == 2) {
+ 396:	82 30       	cpi	r24, 0x02	; 2
+ 398:	91 05       	cpc	r25, r1
+ 39a:	b9 f0       	breq	.+46     	; 0x3ca <main+0x1cc>
+	count++;
+  }
+  //loop back to first digit when needed
+  if(count > 4) {
+ 39c:	85 30       	cpi	r24, 0x05	; 5
+ 39e:	91 05       	cpc	r25, r1
+ 3a0:	94 f0       	brlt	.+36     	; 0x3c6 <main+0x1c8>
+	  count = 0;
+ 3a2:	c0 e0       	ldi	r28, 0x00	; 0
+ 3a4:	d0 e0       	ldi	r29, 0x00	; 0
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+ 3a6:	8f e1       	ldi	r24, 0x1F	; 31
+ 3a8:	9e e4       	ldi	r25, 0x4E	; 78
+ 3aa:	01 97       	sbiw	r24, 0x01	; 1
+ 3ac:	f1 f7       	brne	.-4      	; 0x3aa <main+0x1ac>
+ 3ae:	00 c0       	rjmp	.+0      	; 0x3b0 <main+0x1b2>
+ 3b0:	00 00       	nop
+ 3b2:	45 cf       	rjmp	.-374    	; 0x23e <main+0x40>
+  
+  //bound the count to 0 - 1023
+  if(disp_num > 1023) {
+	  disp_num = 1;
+  }
+  else if(disp_num < 0) {
+ 3b4:	57 fd       	sbrc	r21, 7
+ 3b6:	0b c0       	rjmp	.+22     	; 0x3ce <main+0x1d0>
+
+uint16_t bin_to_bcd(uint16_t i) {
+    uint16_t binaryShift = 0;
+    uint16_t digit;
+    uint16_t bcd = 0;
+    while (i > 0) {
+ 3b8:	41 15       	cp	r20, r1
+ 3ba:	51 05       	cpc	r21, r1
+ 3bc:	09 f0       	breq	.+2      	; 0x3c0 <main+0x1c2>
+ 3be:	86 cf       	rjmp	.-244    	; 0x2cc <main+0xce>
+//Converts binary number to bdc by modding by 10 and shifting by 4 bits per digit.
+
+uint16_t bin_to_bcd(uint16_t i) {
+    uint16_t binaryShift = 0;
+    uint16_t digit;
+    uint16_t bcd = 0;
+ 3c0:	e0 e0       	ldi	r30, 0x00	; 0
+ 3c2:	f0 e0       	ldi	r31, 0x00	; 0
+ 3c4:	ae cf       	rjmp	.-164    	; 0x322 <main+0x124>
+ 3c6:	ec 01       	movw	r28, r24
+ 3c8:	ee cf       	rjmp	.-36     	; 0x3a6 <main+0x1a8>
+  PORTB &= portb_digit_and[count];
+  //update digit to display
+  count++;
+  //avoid the colon
+  if(count == 2) {
+	count++;
+ 3ca:	01 96       	adiw	r24, 0x01	; 1
+ 3cc:	e7 cf       	rjmp	.-50     	; 0x39c <main+0x19e>
+  //bound the count to 0 - 1023
+  if(disp_num > 1023) {
+	  disp_num = 1;
+  }
+  else if(disp_num < 0) {
+	  disp_num = 1023;
+ 3ce:	f0 92 1f 01 	sts	0x011F, r15
+ 3d2:	e0 92 1e 01 	sts	0x011E, r14
+ 3d6:	4f ef       	ldi	r20, 0xFF	; 255
+ 3d8:	53 e0       	ldi	r21, 0x03	; 3
+ 3da:	78 cf       	rjmp	.-272    	; 0x2cc <main+0xce>
+
+000003dc <__umulhisi3>:
+ 3dc:	a2 9f       	mul	r26, r18
+ 3de:	b0 01       	movw	r22, r0
+ 3e0:	b3 9f       	mul	r27, r19
+ 3e2:	c0 01       	movw	r24, r0
+ 3e4:	a3 9f       	mul	r26, r19
+ 3e6:	70 0d       	add	r23, r0
+ 3e8:	81 1d       	adc	r24, r1
+ 3ea:	11 24       	eor	r1, r1
+ 3ec:	91 1d       	adc	r25, r1
+ 3ee:	b2 9f       	mul	r27, r18
+ 3f0:	70 0d       	add	r23, r0
+ 3f2:	81 1d       	adc	r24, r1
+ 3f4:	11 24       	eor	r1, r1
+ 3f6:	91 1d       	adc	r25, r1
+ 3f8:	08 95       	ret
+
+000003fa <_exit>:
+ 3fa:	f8 94       	cli
+
+000003fc <__stop_program>:
+ 3fc:	ff cf       	rjmp	.-2      	; 0x3fc <__stop_program>

@@ -51,6 +51,8 @@ uint8_t alarm_hours = 0;
 uint8_t alarm_minutes = 0;
 char lcd_str_minutes[16];  //holds string to send to lcd  
 char lcd_str_hour[16];  //holds string to send to lcd
+char lcd_str_in_temp[16];  //holds inside temperature to be sent to lcd
+char lcd_str_out_temp[16]; //holds outside temperature to be sent to lcd
 
 uint8_t beat_counter = 0;
 //start high, snooze finish when snooze_couter == 0
@@ -58,6 +60,10 @@ uint8_t snooze_counter = 0;
 uint8_t snooze_flag = 0;
 uint8_t snooze_check = 0;
 uint8_t alarm_on = 0;
+
+uint8_t history[2] = {0, 0};
+uint8_t the_mode = (1<<1);
+uint8_t write_ready = 0;
 
 //*****************************************************************************
 //							bin_to_bcd
@@ -213,6 +219,7 @@ ISR(TIMER0_OVF_vect){
     //for note duration (64th notes)
     beat++;
   }
+  write_ready = 1;
 }
 //*******************************************************************************
 
@@ -231,8 +238,7 @@ DDRB |= (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
 //drive PWM low
 PORTB &= ~(1<<PB7);
 //set portC to output SH!LD
-//DDRC = (1<<DDC0) | (1<<DDC1);
-//PORTC = 0;
+DDRC = (1<<DDC0) | (1<<DDC1);
 
 //setup alarm output
 DDRD |= (ALARM_PIN) | (mute); //see kellen_music.c for pin assignment
@@ -270,6 +276,40 @@ while(1){
 
 	OCR2 = (ADC & 0xff);                      //read the ADC output as 16 bits
 //END ADC---------------------------------------------------------------------------
+
+//ENCODERS--------------------------------------------------------------------------
+  if(write_ready) { //interrupt has occured!
+	  PORTC |= 0x01;  //set the shift register to serial out
+	  
+	  uint8_t spi_in = spi_write_read(the_mode);
+	  
+	  //check spi_in for each encoder (right = 1, left = 0)
+	  for(i = 1; i >= 0; --i) {
+		  //compare past and current encoder output to determine state
+		  if(history[i] == 0x03) {
+			  if(spi_in == 0x01) {
+				  disp_num++;
+				  //the_mode >>= 1;
+			  }
+			  else if(spi_in == 0x02) {
+				  disp_num--;
+				  //the_mode <<= 1;
+			  }
+		  }
+		  //track past encoder output
+		  history [i] = spi_in;
+		  //get the other encoder output values
+		  spi_in >>= 2;
+	  }
+	  PORTC |=  (1<<PC1);                   //send rising edge to regclk on HC595 
+	  PORTC &= ~(1<<PC1) & ~(1<<PC0);       //send falling edge to regclk on HC595
+											//and let the shift register load encoders
+	  //********************************
+	  the_mode = 1;
+	  //reset interrupt flag
+	  write_ready = 0;
+  }
+//END ENCODERS----------------------------------------------------------------------
 
 //Buttons---------------------------------------------------------------------------
 	//make PORTA an input port with pullups 
@@ -410,7 +450,6 @@ while(1){
   }
   if(alarm_on & (snooze_flag == 0) & (snooze_check == 0)) {
 	OCR3A = 0x000f;
-	//OCR3A = 0xffff;
     music_on();
     snooze_check = 1;
   }
@@ -419,7 +458,6 @@ while(1){
 //ALARM SOUND------------------------------------------------------------------------------------
   if(alarm_set & (alarm_hours == hours) & (alarm_minutes == minutes) & (alarm_on == 0)) {
     OCR3A = 0x000f;
-    //OCR3A = 0xffff;
     alarm_on = 1;
     music_on();
   }

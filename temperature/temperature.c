@@ -20,8 +20,14 @@
 #include "hd44780.h"
 #include "kellen_music.c"
 #include <string.h>
+#include "lm73_functions.h"
+#include "twi_master.h"
+#include <util/twi.h>
 
 #define SNOOZE_TIME_SEC 10
+
+extern uint8_t lm73_wr_buf[2]; 
+extern uint8_t lm73_rd_buf[2]; 
 
 //-------------------------------
 //LCD STUFF
@@ -51,6 +57,10 @@ uint8_t alarm_hours = 0;
 uint8_t alarm_minutes = 0;
 char lcd_str_minutes[16];  //holds string to send to lcd  
 char lcd_str_hour[16];  //holds string to send to lcd
+char lcd_str_in_temp[16];  //holds inside temperature to be sent to lcd
+char lcd_str_in_dec[9];
+char lcd_str_out_temp[16]; //holds outside temperature to be sent to lcd
+
 
 uint8_t beat_counter = 0;
 //start high, snooze finish when snooze_couter == 0
@@ -58,6 +68,10 @@ uint8_t snooze_counter = 0;
 uint8_t snooze_flag = 0;
 uint8_t snooze_check = 0;
 uint8_t alarm_on = 0;
+
+uint8_t history[2] = {0, 0};
+uint8_t the_mode = (1<<1);
+uint8_t write_ready = 0;
 
 //*****************************************************************************
 //							bin_to_bcd
@@ -213,6 +227,7 @@ ISR(TIMER0_OVF_vect){
     //for note duration (64th notes)
     beat++;
   }
+  //write_ready = 1;
 }
 //*******************************************************************************
 
@@ -224,6 +239,43 @@ void clear_lcd_array(void) {
 	}
 }
 
+
+uint8_t bin_frac_to_dec(uint8_t bin) {
+	uint8_t dec = 0;
+	uint8_t i = 0;
+	for(i = 0; i < 8; i++) {
+		if(bin & (1<<i)) {
+			switch(i) {
+				case 0:
+					dec += 390625; 
+					break;
+				case 1:
+					dec += 781250;
+					break;
+				case 2:
+					dec += 1562500;
+					break;
+				case 3:
+					dec += 3125000;
+					break;
+				case 4:
+					dec += 6250000;
+					break;
+				case 5:
+					dec += 12500000;
+					break;
+				case 6:
+					dec += 25000000;
+					break;
+				case 7:
+					dec += 50000000;
+					break;
+			}
+		}
+	}
+	return dec;
+}
+
 uint8_t main()
 {
 //set port B bits 4-7 as outputs
@@ -231,8 +283,7 @@ DDRB |= (1<<DDB4) | (1<<DDB5) | (1<<DDB6) | (1<<DDB7);
 //drive PWM low
 PORTB &= ~(1<<PB7);
 //set portC to output SH!LD
-//DDRC = (1<<DDC0) | (1<<DDC1);
-//PORTC = 0;
+DDRC = (1<<DDC0) | (1<<DDC1);
 
 //setup alarm output
 DDRD |= (ALARM_PIN) | (mute); //see kellen_music.c for pin assignment
@@ -246,6 +297,7 @@ tcnt2_init();  //initalize counter timer two
 tcnt3_init();
 spi_init();    //initalize SPI port
 lcd_init();    //initalize LCD (lcd_functions.h)
+init_twi();  //initalize TWI (twi_master.h)  
 clear_display();
 sei();         //enable interrupts before entering loop
 
@@ -253,6 +305,7 @@ music_init();
 
 int digit_count = 0;
 int i = 0;
+uint16_t lm73_temp;  //a place to assemble the temperature from the lm73
 
 //make port F bit 7 is ADC input  
 PORTF &= ~(_BV(PF7));  //port F bit 7 pullups must be off
@@ -260,7 +313,19 @@ PORTF &= ~(_BV(PF7));  //port F bit 7 pullups must be off
 ADMUX = (1<<REFS0) | (1<<MUX2) | (1<<MUX1) | (1<<MUX0); //single-ended, input PORTF bit 7, right adjusted, 10 bits
 ADCSRA = (1<<ADEN) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2); //ADC enabled, don't start et, single shot mode
 															//division factor is 128 (125khz)
+
+//IN TEMP------------------------------------------------------------------------------------
+//set LM73 mode for reading temperature by loading pointer register
+lm73_wr_buf[0] = LM73_PTR_TEMP; //load lm73_wr_buf[0] with temperature pointer address
+twi_start_wr(LM73_ADDRESS, lm73_wr_buf, 1);  //start the TWI write process
+_delay_ms(2);    //wait for the xfer to finish
+//END IN TEMP--------------------------------------------------------------------------------
+
 while(1){
+	
+//IN TEMP------------------------------------------------------------------------------------
+	twi_start_rd(LM73_ADDRESS, lm73_rd_buf, 2); //read temperature data from LM73 (2 bytes)
+//END IN TEMP--------------------------------------------------------------------------------
 	
 //ADC--------------------------------------------------------------------------------
 	ADCSRA |= (1<<ADSC);    // poke ADSC and start conversion
@@ -270,6 +335,40 @@ while(1){
 
 	OCR2 = (ADC & 0xff);                      //read the ADC output as 16 bits
 //END ADC---------------------------------------------------------------------------
+
+//ENCODERS--------------------------------------------------------------------------
+  if(write_ready) { //interrupt has occured!
+	  PORTC |= 0x01;  //set the shift register to serial out
+	  
+	  uint8_t spi_in = spi_write_read(the_mode);
+	  
+	  //check spi_in for each encoder (right = 1, left = 0)
+	  for(i = 1; i >= 0; --i) {
+		  //compare past and current encoder output to determine state
+		  if(history[i] == 0x03) {
+			  if(spi_in == 0x01) {
+				  disp_num++;
+				  //the_mode >>= 1;
+			  }
+			  else if(spi_in == 0x02) {
+				  disp_num--;
+				  //the_mode <<= 1;
+			  }
+		  }
+		  //track past encoder output
+		  history [i] = spi_in;
+		  //get the other encoder output values
+		  spi_in >>= 2;
+	  }
+	  PORTC |=  (1<<PC1);                   //send rising edge to regclk on HC595 
+	  PORTC &= ~(1<<PC1) & ~(1<<PC0);       //send falling edge to regclk on HC595
+											//and let the shift register load encoders
+	  //********************************
+	  the_mode = 1;
+	  //reset interrupt flag
+	  write_ready = 0;
+  }
+//END ENCODERS----------------------------------------------------------------------
 
 //Buttons---------------------------------------------------------------------------
 	//make PORTA an input port with pullups 
@@ -369,6 +468,24 @@ while(1){
   }
 //END LED DISPLAY-----------------------------------------------------------------------------
 
+//IN TEMP------------------------------------------------------------------------------------
+  //twi_start_rd(LM73_ADDRESS, lm73_rd_buf, 2); //read temperature data from LM73 (2 bytes)
+  //_delay_ms(2);    //wait for the xfer to finish
+  lm73_temp = lm73_rd_buf[0];  //save high temperature byte into lm73_temp
+  lm73_temp = lm73_temp << 8;  //shift it into upper byte 
+  lm73_temp |= lm73_rd_buf[1]; //"OR" in the low temp byte to lm73_temp
+  //lm73_temp >>= 7;  //converts reading to Celcius
+  //itoa(lm73_temp, lcd_string_array, 2);  //convert to string in array with itoa() from avr-libc   
+  //itoa(lm73_temp, lcd_string_array, 10);  //convert to string in array with itoa() from avr-libc, base 10 version
+  //update the display once every second
+  if((to_ovf_count % 128) == 0) {
+	  itoa(lm73_temp >> 7, lcd_str_in_temp, 10); //convert to string in array with itoa() from avr-libc, base 10 version
+	  uint8_t dec = bin_frac_to_dec(lm73_temp & 0x7f);
+	  itoa(dec, lcd_str_in_dec, 10);
+	  lcd_str_in_dec[2] = '\0';
+  }
+//END IN TEMP--------------------------------------------------------------------------------
+
 //LCD DISPLAY---------------------------------------------------------------------------------
   //check for minutes or hour overflow
   if(alarm_minutes > 59) {
@@ -398,6 +515,19 @@ while(1){
   
   //delete null terminator from string functions
   lcd_string_array[strlen(lcd_string_array)] = ' ';
+  
+  //write bottom line to lcd---------
+  lcd_string_array[16] = '\0';
+  strcat(lcd_string_array, "IN:");
+  strcat(lcd_string_array, lcd_str_in_temp);
+  strcat(lcd_string_array, ".");
+  strcat(lcd_string_array, lcd_str_in_dec);
+  strcat(lcd_string_array, "C OUT:");
+  strcat(lcd_string_array, "C");
+  //delete null terminator from string functions
+  lcd_string_array[strlen(lcd_string_array)] = ' ';
+  //done with bottom line-----------
+  
   //write the master string to the lcd
   refresh_lcd(lcd_string_array);
 //END LCD DISPLAY---------------------------------------------------------------------------------  
@@ -410,7 +540,6 @@ while(1){
   }
   if(alarm_on & (snooze_flag == 0) & (snooze_check == 0)) {
 	OCR3A = 0x000f;
-	//OCR3A = 0xffff;
     music_on();
     snooze_check = 1;
   }
@@ -419,12 +548,13 @@ while(1){
 //ALARM SOUND------------------------------------------------------------------------------------
   if(alarm_set & (alarm_hours == hours) & (alarm_minutes == minutes) & (alarm_on == 0)) {
     OCR3A = 0x000f;
-    //OCR3A = 0xffff;
     alarm_on = 1;
     music_on();
   }
 //END ALARM SOUND---------------------------------------------------------------------------------
 
   _delay_ms(1);
+
+
   }//while
 }//main
